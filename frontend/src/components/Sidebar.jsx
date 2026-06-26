@@ -1,6 +1,9 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Flame, Rocket, Star, Wallet, TrendingUp, TrendingDown, Settings, ChevronLeft, ChevronRight, BarChart2, Shield, Zap } from 'lucide-react';
+import {
+  Home, Flame, Rocket, Star, Wallet, BarChart2, Zap, Settings,
+  ChevronLeft, ChevronRight, Shield, Users, Award
+} from 'lucide-react';
 
 const navItems = [
   { path: '/', label: 'Home', icon: Home },
@@ -8,10 +11,11 @@ const navItems = [
   { path: '/new-pairs', label: 'New Pairs', icon: Rocket },
   { path: '/watchlist', label: 'Watchlist', icon: Star },
   { path: '/portfolio', label: 'Portfolio', icon: Wallet },
-  { path: '/top-gainers', label: 'Top Gainers', icon: TrendingUp },
-  { path: '/top-losers', label: 'Top Losers', icon: TrendingDown },
+  { path: '/charts', label: 'Charts', icon: BarChart2 },
   { path: '/smart-money', label: 'Smart Money', icon: Zap },
   { path: '/rug-check', label: 'Rug Check', icon: Shield },
+  { path: '/holders', label: 'Holders', icon: Users },
+  { path: '/leaderboard', label: 'Leaderboard', icon: Award },
   { path: '/settings', label: 'Settings', icon: Settings },
 ];
 
@@ -52,7 +56,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       </nav>
 
       <div className="p-4 border-t border-gray-800 text-xs text-gray-500 text-center">
-        {isOpen ? 'v2.4.1' : 'v2.4.1'}
+        {isOpen ? 'v2.0.0' : 'v2.0.0'}
       </div>
     </aside>
   );

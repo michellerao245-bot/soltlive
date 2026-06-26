@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Bell, DollarSign, LogIn, Globe, Settings, Menu, Sun, Moon,
-  Search, Star, User, TrendingUp, Rocket, Flame, BarChart2,
+  Search, Star, User, TrendingUp, TrendingDown, Rocket, Flame, BarChart2,
   Wallet, ChevronDown, Monitor
 } from 'lucide-react';
 import ChainFilter from './ChainFilter';

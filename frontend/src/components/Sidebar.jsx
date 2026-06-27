@@ -27,7 +27,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     <aside className={`${isOpen ? 'w-64' : 'w-20'} bg-[#131722] border-r border-gray-800 transition-all duration-300 flex flex-col h-screen sticky top-0 overflow-y-auto`}>
       <div className="flex items-center justify-between p-4 border-b border-gray-800">
         {isOpen ? (
-          <h1 className="text-2xl font-bold text-green-400">EcoLive</h1>
+          <h1 className="text-2xl font-bold text-green-400">SoltLive</h1>
         ) : (
           <span className="text-2xl font-bold text-green-400">EL</span>
         )}

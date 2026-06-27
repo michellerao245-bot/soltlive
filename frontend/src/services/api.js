@@ -1,7 +1,8 @@
+// src/services/api.js
 import axios from 'axios';
 
-// Apne backend ka live URL ya local URL yahan dalein
-const API_BASE_URL = 'https://ecobackend.vercel.app'; // Ya localhost ke liye: 'http://localhost:5000'
+// ✅ CORRECT BACKEND URL with env fallback
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ecobackend-two.vercel.app';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -9,5 +10,42 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// Token list with pagination
+export const fetchTokens = async (chain = 'all', page = 1, limit = 50) => {
+  try {
+    const response = await api.get('/api/tokens', {
+      params: { chain, page, limit, sort: 'volume_24h', order: 'desc' }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching tokens:', error);
+    return { success: false, data: [], pagination: { total: 0 } };
+  }
+};
+
+// Token details
+export const fetchTokenDetails = async (address) => {
+  try {
+    const response = await api.get('/api/presale/check', {
+      params: { address }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching token details:', error);
+    return null;
+  }
+};
+
+// Trending tokens
+export const fetchTrending = async () => {
+  try {
+    const response = await api.get('/api/trending');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching trending:', error);
+    return [];
+  }
+};
 
 export default api;

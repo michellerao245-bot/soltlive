@@ -1,8 +1,8 @@
 // src/services/api.js
 import axios from 'axios';
 
-// ✅ CORRECT BACKEND URL with env fallback
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ecobackend-two.vercel.app';
+// ✅ CORRECT BACKEND URL
+const API_BASE_URL = 'https://ecobackend-two.vercel.app';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -11,7 +11,7 @@ const api = axios.create({
   },
 });
 
-// Token list with pagination
+// ✅ Fetch tokens with pagination
 export const fetchTokens = async (chain = 'all', page = 1, limit = 50) => {
   try {
     const response = await api.get('/api/tokens', {
@@ -24,7 +24,7 @@ export const fetchTokens = async (chain = 'all', page = 1, limit = 50) => {
   }
 };
 
-// Token details
+// ✅ Fetch single token details
 export const fetchTokenDetails = async (address) => {
   try {
     const response = await api.get('/api/presale/check', {
@@ -37,7 +37,7 @@ export const fetchTokenDetails = async (address) => {
   }
 };
 
-// Trending tokens
+// ✅ Fetch trending tokens
 export const fetchTrending = async () => {
   try {
     const response = await api.get('/api/trending');

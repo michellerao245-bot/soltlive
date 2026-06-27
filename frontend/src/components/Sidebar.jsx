@@ -29,7 +29,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         {isOpen ? (
           <h1 className="text-2xl font-bold text-green-400">SoltLive</h1>
         ) : (
-          <span className="text-2xl font-bold text-green-400">EL</span>
+          <span className="text-2xl font-bold text-green-400">SL</span>
         )}
         <button onClick={() => setIsOpen(!isOpen)} className="text-gray-400 hover:text-white">
           {isOpen ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}

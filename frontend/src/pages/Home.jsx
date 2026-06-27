@@ -1,3 +1,4 @@
+// src/pages/Home.jsx (Sirf return statement ko update karo ya poora replace kar lo)
 import React, { useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
@@ -8,7 +9,7 @@ import TopCards from '../components/TopCards';
 import TokenTable from '../components/TokenTable';
 import WhaleActivity from '../components/WhaleActivity';
 import Footer from '../components/Footer';
-import { useTokens } from '../hooks/useTokens'; // 🔥 Real data hook
+import { useTokens } from '../hooks/useTokens'; 
 
 const Home = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -19,7 +20,6 @@ const Home = () => {
   });
   const navigate = useNavigate();
 
-  // 🔥 Use real tokens hook with infinite scroll
   const { tokens, loading, hasMore, fetchMore } = useTokens(chainFilter);
 
   const toggleTheme = useCallback(() => {
@@ -35,7 +35,6 @@ const Home = () => {
     localStorage.setItem('watchlist', JSON.stringify(newList));
   }, [watchlist]);
 
-  // 🔥 Infinite Scroll Observer
   const observerRef = useRef();
   const lastTokenRef = useCallback(node => {
     if (loading) return;
@@ -49,10 +48,16 @@ const Home = () => {
   }, [loading, hasMore, fetchMore]);
 
   return (
-    <div className="min-h-screen bg-[#0b0e14] text-white flex">
-      <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+    // 1. Root Wrapper: full screen width set karo aur hidden locks bypass karo
+    <div className="min-h-screen w-full bg-[#0b0e14] text-white flex overflow-x-hidden">
+      
+      {/* 2. Sidebar Layout Wrapper: flex-shrink-0 lagaya taaki grid isko press na kare */}
+      <div className="flex-shrink-0 z-30">
+        <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+      </div>
 
-      <div className="flex-1 flex flex-col min-h-screen">
+      {/* 3. Main Dashboard Side Area: Isko bacha hua width ('flex-1') do aur horizontal screen crash handle karo */}
+      <div className="flex-1 flex flex-col min-h-screen min-w-0">
         <Header
           onChainFilter={handleChainFilter}
           chainFilter={chainFilter}
@@ -66,30 +71,33 @@ const Home = () => {
         <TrendingBar />
         <TopCards />
 
-        <div className="flex-1 p-4 pt-0">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1">
-              <div className="bg-[#131722] border border-gray-800 rounded-xl overflow-hidden">
+        {/* Responsive Content Area */}
+        <div className="flex-1 p-4 pt-0 w-full">
+          <div className="flex flex-col lg:flex-row gap-4 w-full">
+            
+            {/* Table Panel Side */}
+            <div className="flex-1 min-w-0">
+              <div className="bg-[#131722] border border-gray-800 rounded-xl overflow-hidden w-full">
                 <TokenTable
                   tokens={tokens}
-                  onSelect={(token) => navigate(`/token/${token.pairAddress}`)}
+                  onSelect={(token) => navigate(`/token/${token.pairAddress || token.token_address}`)}
                   watchlist={watchlist}
                   toggleWatchlist={toggleWatchlist}
                 />
 
-                {/* 🔥 Loading indicator */}
+                {/* Loading indicator */}
                 {loading && (
                   <div className="text-center py-4 text-gray-400 text-sm">
                     ⏳ Loading more tokens...
                   </div>
                 )}
 
-                {/* 🔥 Sentinel for infinite scroll */}
+                {/* Sentinel for infinite scroll */}
                 {!loading && hasMore && (
                   <div ref={lastTokenRef} className="h-4" />
                 )}
 
-                {/* 🔥 All loaded */}
+                {/* All loaded */}
                 {!hasMore && tokens.length > 0 && (
                   <div className="text-center py-4 text-gray-500 text-xs">
                     🎉 All {tokens.length} tokens loaded
@@ -98,10 +106,11 @@ const Home = () => {
               </div>
             </div>
 
-            <div className="w-full lg:w-72 xl:w-80 space-y-4">
+            {/* Whale Activity Right Side Widget */}
+            <div className="w-full lg:w-72 xl:w-80 flex-shrink-0 space-y-4">
               <WhaleActivity />
-              {/* Additional widgets yahan aa sakte hain */}
             </div>
+
           </div>
         </div>
 

@@ -1,77 +1,17 @@
+// src/App.jsx
 import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import TokenPage from "./pages/TokenPage";
-
-// ✅ Temporary placeholder components
-const Trending = () => (
-  <div className="min-h-screen bg-[#0b0e14] text-white p-10">
-    <h1 className="text-3xl font-bold">🔥 Trending</h1>
-    <p className="text-gray-400 mt-2">Coming soon...</p>
-  </div>
-);
-
-const NewPairs = () => (
-  <div className="min-h-screen bg-[#0b0e14] text-white p-10">
-    <h1 className="text-3xl font-bold">🚀 New Pairs</h1>
-    <p className="text-gray-400 mt-2">Coming soon...</p>
-  </div>
-);
-
-const Watchlist = () => (
-  <div className="min-h-screen bg-[#0b0e14] text-white p-10">
-    <h1 className="text-3xl font-bold">⭐ Watchlist</h1>
-    <p className="text-gray-400 mt-2">Coming soon...</p>
-  </div>
-);
-
-const Portfolio = () => (
-  <div className="min-h-screen bg-[#0b0e14] text-white p-10">
-    <h1 className="text-3xl font-bold">💼 Portfolio</h1>
-    <p className="text-gray-400 mt-2">Coming soon...</p>
-  </div>
-);
-
-const Charts = () => (
-  <div className="min-h-screen bg-[#0b0e14] text-white p-10">
-    <h1 className="text-3xl font-bold">📊 Charts</h1>
-    <p className="text-gray-400 mt-2">Coming soon...</p>
-  </div>
-);
-
-const SmartMoney = () => (
-  <div className="min-h-screen bg-[#0b0e14] text-white p-10">
-    <h1 className="text-3xl font-bold">🧠 Smart Money</h1>
-    <p className="text-gray-400 mt-2">Coming soon...</p>
-  </div>
-);
-
-const RugCheck = () => (
-  <div className="min-h-screen bg-[#0b0e14] text-white p-10">
-    <h1 className="text-3xl font-bold">🛡️ Rug Check</h1>
-    <p className="text-gray-400 mt-2">Coming soon...</p>
-  </div>
-);
-
-const Holders = () => (
-  <div className="min-h-screen bg-[#0b0e14] text-white p-10">
-    <h1 className="text-3xl font-bold">👥 Holders</h1>
-    <p className="text-gray-400 mt-2">Coming soon...</p>
-  </div>
-);
-
-const Leaderboard = () => (
-  <div className="min-h-screen bg-[#0b0e14] text-white p-10">
-    <h1 className="text-3xl font-bold">🏆 Leaderboard</h1>
-    <p className="text-gray-400 mt-2">Coming soon...</p>
-  </div>
-);
-
-const Settings = () => (
-  <div className="min-h-screen bg-[#0b0e14] text-white p-10">
-    <h1 className="text-3xl font-bold">⚙️ Settings</h1>
-    <p className="text-gray-400 mt-2">Coming soon...</p>
-  </div>
-);
+import Trending from "./pages/Trending";
+import NewPairs from "./pages/NewPairs";
+import Watchlist from "./pages/Watchlist";
+import Portfolio from "./pages/Portfolio";
+import Charts from "./pages/Charts";
+import SmartMoney from "./pages/SmartMoney";
+import RugCheck from "./pages/RugCheck";
+import Holders from "./pages/Holders";
+import Leaderboard from "./pages/Leaderboard";
+import Settings from "./pages/Settings";
 
 export default function App() {
   return (
@@ -80,7 +20,7 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/token/:pairAddress" element={<TokenPage />} />
       
-      {/* ✅ Sidebar Navigation Routes */}
+      {/* ✅ All Sidebar Routes - Working! */}
       <Route path="/trending" element={<Trending />} />
       <Route path="/new-pairs" element={<NewPairs />} />
       <Route path="/watchlist" element={<Watchlist />} />

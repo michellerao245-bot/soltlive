@@ -1,24 +1,58 @@
 // src/components/TokenTable.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Star, StarOff, ExternalLink } from 'lucide-react';
 
-// ---------- HELPERS ----------
+// ---------- CURRENCY HELPERS ----------
+const getCurrency = () => {
+  return localStorage.getItem('preferredCurrency') || 'USD';
+};
+
+const getCurrencyRate = () => {
+  const rates = {
+    USD: 1, EUR: 0.93, GBP: 0.79, INR: 83.5,
+    JPY: 157.5, AUD: 1.51, CAD: 1.37, CHF: 0.91,
+    CNY: 7.27, KRW: 1380,
+  };
+  const currency = getCurrency();
+  return rates[currency] || 1;
+};
+
+const getCurrencySymbol = () => {
+  const symbols = {
+    USD: '$', EUR: '€', GBP: '£', INR: '₹',
+    JPY: '¥', AUD: 'A$', CAD: 'C$', CHF: 'Fr',
+    CNY: '¥', KRW: '₩',
+  };
+  const currency = getCurrency();
+  return symbols[currency] || '$';
+};
+
+// ---------- FORMATTING HELPERS ----------
 const formatCurrency = (value) => {
   if (!value || value === 0) return 'N/A';
-  if (value >= 1e9) return `$${(value / 1e9).toFixed(2)}B`;
-  if (value >= 1e6) return `$${(value / 1e6).toFixed(2)}M`;
-  if (value >= 1e3) return `$${(value / 1e3).toFixed(2)}K`;
-  return `$${value.toFixed(2)}`;
+  const rate = getCurrencyRate();
+  const symbol = getCurrencySymbol();
+  const converted = value * rate;
+  
+  if (converted >= 1e9) return `${symbol}${(converted / 1e9).toFixed(2)}B`;
+  if (converted >= 1e6) return `${symbol}${(converted / 1e6).toFixed(2)}M`;
+  if (converted >= 1e3) return `${symbol}${(converted / 1e3).toFixed(2)}K`;
+  return `${symbol}${converted.toFixed(2)}`;
 };
 
 const formatPrice = (value) => {
   if (!value) return 'N/A';
   const numValue = typeof value === 'string' ? parseFloat(value) : value;
   if (isNaN(numValue)) return 'N/A';
-  if (numValue < 0.000001) return numValue.toFixed(10);
-  if (numValue < 0.001) return numValue.toFixed(8);
-  if (numValue < 1) return numValue.toFixed(6);
-  return numValue.toFixed(2);
+  
+  const rate = getCurrencyRate();
+  const symbol = getCurrencySymbol();
+  const converted = numValue * rate;
+  
+  if (converted < 0.000001) return `${symbol}${converted.toFixed(10)}`;
+  if (converted < 0.001) return `${symbol}${converted.toFixed(8)}`;
+  if (converted < 1) return `${symbol}${converted.toFixed(6)}`;
+  return `${symbol}${converted.toFixed(2)}`;
 };
 
 const getChainBadge = (chain) => {
@@ -60,6 +94,21 @@ const TokenLogo = ({ logo, symbol }) => {
 
 // ---------- MAIN TABLE ----------
 const TokenTable = ({ tokens, onSelect, watchlist, toggleWatchlist }) => {
+  const [currency, setCurrency] = useState(getCurrency());
+
+  // ✅ Listen for currency changes
+  useEffect(() => {
+    const handleCurrencyChange = () => {
+      setCurrency(getCurrency());
+    };
+    window.addEventListener('currencyChange', handleCurrencyChange);
+    window.addEventListener('storage', handleCurrencyChange);
+    return () => {
+      window.removeEventListener('currencyChange', handleCurrencyChange);
+      window.removeEventListener('storage', handleCurrencyChange);
+    };
+  }, []);
+
   if (!tokens || tokens.length === 0) {
     return (
       <div className="text-center py-10 text-gray-500">
@@ -99,7 +148,6 @@ const TokenTable = ({ tokens, onSelect, watchlist, toggleWatchlist }) => {
                 key={tokenIdentifier}
                 className="border-b border-gray-800 hover:bg-[#1e232e] cursor-pointer transition group"
                 onClick={() => {
-                  // ✅ Pass the full token object to onSelect
                   if (onSelect) {
                     onSelect(token);
                   }
@@ -148,9 +196,9 @@ const TokenTable = ({ tokens, onSelect, watchlist, toggleWatchlist }) => {
                   </div>
                 </td>
 
-                {/* Price */}
+                {/* ✅ Price with Currency */}
                 <td className="py-3 px-2 text-right font-mono text-white">
-                  ${formatPrice(token.price)}
+                  {formatPrice(token.price)}
                 </td>
 
                 {/* 24h Change */}
@@ -162,22 +210,22 @@ const TokenTable = ({ tokens, onSelect, watchlist, toggleWatchlist }) => {
                     : 'N/A'}
                 </td>
 
-                {/* Volume */}
+                {/* ✅ Volume with Currency */}
                 <td className="py-3 px-2 text-right text-gray-300">
                   {formatCurrency(token.volume_24h || token.volume)}
                 </td>
 
-                {/* Liquidity */}
+                {/* ✅ Liquidity with Currency */}
                 <td className="py-3 px-2 text-right text-gray-300">
                   {formatCurrency(token.liquidity)}
                 </td>
 
-                {/* FDV */}
+                {/* ✅ FDV with Currency */}
                 <td className="py-3 px-2 text-right text-gray-300">
                   {formatCurrency(token.fdv)}
                 </td>
 
-                {/* Market Cap */}
+                {/* ✅ Market Cap with Currency */}
                 <td className="py-3 px-2 text-right text-gray-300">
                   {formatCurrency(token.market_cap)}
                 </td>

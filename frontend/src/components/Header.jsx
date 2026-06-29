@@ -8,15 +8,16 @@ import {
 } from 'lucide-react';
 import ChainFilter from './ChainFilter';
 import SearchDropdown from './SearchDropdown';
+import CurrencyToggle from './CurrencyToggle'; // ✅ Import CurrencyToggle
 
-const Header = ({ 
-  onChainFilter, 
-  chainFilter, 
-  toggleTheme, 
-  theme, 
-  isSidebarOpen, 
+const Header = ({
+  onChainFilter,
+  chainFilter,
+  toggleTheme,
+  theme,
+  isSidebarOpen,
   setIsSidebarOpen,
-  onRefresh 
+  onRefresh
 }) => {
   const [search, setSearch] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
@@ -56,8 +57,8 @@ const Header = ({
   return (
     <header className="bg-[#131722] border-b border-gray-800 px-3 py-2 flex items-center justify-between sticky top-0 z-20 gap-2 flex-wrap">
       {/* Mobile Menu */}
-      <button 
-        onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
+      <button
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
         className="lg:hidden text-gray-400 hover:text-white transition"
       >
         <Menu size={22} />
@@ -86,8 +87,8 @@ const Header = ({
         
         {/* More dropdown */}
         <div className="relative">
-          <button 
-            onClick={() => setShowMore(!showMore)} 
+          <button
+            onClick={() => setShowMore(!showMore)}
             className="px-2 py-1 text-gray-400 hover:text-white hover:bg-[#1e232e] rounded transition"
           >
             <ChevronDown size={14} />
@@ -121,9 +122,9 @@ const Header = ({
             type="text"
             placeholder="Search token, pair, or address... (Ctrl+K)"
             value={search}
-            onChange={(e) => { 
-              setSearch(e.target.value); 
-              setShowDropdown(true); 
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setShowDropdown(true);
             }}
             onFocus={() => setShowDropdown(true)}
             onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
@@ -141,26 +142,41 @@ const Header = ({
           <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span> LIVE
         </span>
         
-        {/* ✅ Watchlist Button - Working */}
-        <button 
-          onClick={() => navigate('/watchlist')} 
-          className="text-gray-400 hover:text-white transition hidden md:block"
+        {/* Refresh Button */}
+        {onRefresh && (
+          <button
+            onClick={onRefresh}
+            className="text-gray-400 hover:text-white transition hidden lg:block"
+            title="Refresh data"
+          >
+            <RefreshCw size={16} />
+          </button>
+        )}
+        
+        {/* Notification */}
+        <button className="text-gray-400 hover:text-white relative hidden lg:block transition">
+          <Bell size={16} />
+          <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+        </button>
+        
+        {/* Globe */}
+        <button className="text-gray-400 hover:text-white hidden md:block transition"><Globe size={16} /></button>
+        
+        {/* ✅ Currency Toggle - Working! */}
+        <CurrencyToggle />
+        
+        {/* Watchlist */}
+        <button
+          onClick={() => navigate('/watchlist')}
+          className="text-gray-400 hover:text-white hidden md:block transition"
           title="Watchlist"
         >
           <Star size={16} />
         </button>
         
-        {/* ✅ Currency Button - Toggle */}
-        <button 
-          onClick={() => alert('Currency toggle coming soon!')} 
-          className="text-gray-400 hover:text-white hidden lg:block transition"
-        >
-          <DollarSign size={14} />
-        </button>
-        
-        {/* ✅ Connect Wallet Button */}
-        <button 
-          onClick={() => alert('Wallet connect coming soon!')} 
+        {/* Connect Wallet */}
+        <button
+          onClick={() => alert('Wallet connect coming soon!')}
           className="bg-green-500/20 text-green-400 px-3 py-1 rounded-lg text-xs font-medium flex items-center gap-1 hover:bg-green-500/30 transition"
         >
           <LogIn size={14} /> Connect
@@ -172,8 +188,8 @@ const Header = ({
         </button>
         
         {/* User Profile */}
-        <button 
-          onClick={() => navigate('/settings')} 
+        <button
+          onClick={() => navigate('/settings')}
           className="text-gray-400 hover:text-white hidden sm:block transition"
         >
           <User size={16} />

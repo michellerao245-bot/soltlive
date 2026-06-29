@@ -1,51 +1,196 @@
-import { useParams } from "react-router-dom";
-import PriceChart from "../components/PriceChart";
-import TokenInfo from "../components/TokenInfo";
-import LiveTrades from "../components/LiveTrades";
-import BuySellPanel from "../components/BuySellPanel";
+// src/pages/TokenPage.jsx
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import Sidebar from '../components/Sidebar';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import { fetchTokens, fetchTokenDetails } from '../services/api';
 
-export default function TokenPage() {
-  const { pairAddress } = useParams();
+const TokenPage = () => {
+  const { pairAddress } = useParams(); // ✅ URL se address le raha hai
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [theme, setTheme] = useState('dark');
+  const [chainFilter, setChainFilter] = useState('all');
+  const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-  return (
-    <div className="min-h-screen bg-[#0b0e14] text-white">
+  useEffect(() => {
+    if (pairAddress) {
+      loadToken(pairAddress);
+    }
+  }, [pairAddress]);
 
-      {/* Header */}
-      <div className="border-b border-gray-800 p-4">
-        <h1 className="text-2xl font-bold">
-          Token Details
-        </h1>
+  const loadToken = async (address) => {
+    setLoading(true);
+    setError(null);
+    try {
+      // ✅ Pehle tokens list me search karo
+      const tokensData = await fetchTokens('all', 1, 100);
+      if (tokensData.success) {
+        const found = tokensData.data.find(
+          t => t.pair_address === address || t.token_address === address
+        );
+        if (found) {
+          setToken(found);
+          setLoading(false);
+          return;
+        }
+      }
 
-        <p className="text-gray-500 text-sm break-all">
-          {pairAddress}
-        </p>
-      </div>
+      // ✅ Agar list me nahi mila toh details fetch karo
+      const details = await fetchTokenDetails(address);
+      if (details && details.success) {
+        setToken(details);
+      } else {
+        setError('Token not found');
+      }
+    } catch (err) {
+      console.error('Error loading token:', err);
+      setError('Failed to load token data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      {/* Layout */}
-      <div className="grid grid-cols-12 gap-4 p-4">
+  const toggleTheme = () => {
+    setTheme(t => (t === 'dark' ? 'light' : 'dark'));
+    document.documentElement.classList.toggle('light');
+  };
 
-        {/* Left Side */}
-        <div className="col-span-12 lg:col-span-8 flex flex-col gap-4">
-
-          <TokenInfo pairAddress={pairAddress} />
-
-          <div className="bg-[#131722] rounded-xl border border-gray-800 p-3">
-            <PriceChart />
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0b0e14] text-white flex">
+        <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+        <div className="flex-1 flex flex-col min-h-screen">
+          <Header
+            onChainFilter={setChainFilter}
+            chainFilter={chainFilter}
+            toggleTheme={toggleTheme}
+            theme={theme}
+            isSidebarOpen={isSidebarOpen}
+            setIsSidebarOpen={setIsSidebarOpen}
+          />
+          <div className="flex-1 p-4 flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-green-500 border-t-transparent mx-auto mb-4"></div>
+              <p className="text-gray-400">Loading token...</p>
+            </div>
           </div>
-
+          <Footer />
         </div>
-
-        {/* Right Side */}
-        <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
-
-          <BuySellPanel pairAddress={pairAddress} />
-
-          <LiveTrades pairAddress={pairAddress} />
-
-        </div>
-
       </div>
+    );
+  }
 
+  // Error state
+  if (error || !token) {
+    return (
+      <div className="min-h-screen bg-[#0b0e14] text-white flex">
+        <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+        <div className="flex-1 flex flex-col min-h-screen">
+          <Header
+            onChainFilter={setChainFilter}
+            chainFilter={chainFilter}
+            toggleTheme={toggleTheme}
+            theme={theme}
+            isSidebarOpen={isSidebarOpen}
+            setIsSidebarOpen={setIsSidebarOpen}
+          />
+          <div className="flex-1 p-4 flex items-center justify-center">
+            <div className="text-center">
+              <p className="text-red-400 text-xl">❌ Token not found</p>
+              <button
+                onClick={() => navigate('/')}
+                className="mt-4 bg-green-500/20 text-green-400 px-4 py-2 rounded-lg hover:bg-green-500/30 transition"
+              >
+                ← Back to Home
+              </button>
+            </div>
+          </div>
+          <Footer />
+        </div>
+      </div>
+    );
+  }
+
+  // Success state
+  return (
+    <div className="min-h-screen bg-[#0b0e14] text-white flex">
+      <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+      <div className="flex-1 flex flex-col min-h-screen">
+        <Header
+          onChainFilter={setChainFilter}
+          chainFilter={chainFilter}
+          toggleTheme={toggleTheme}
+          theme={theme}
+          isSidebarOpen={isSidebarOpen}
+          setIsSidebarOpen={setIsSidebarOpen}
+        />
+        <div className="flex-1 p-4">
+          <button
+            onClick={() => navigate('/')}
+            className="text-gray-400 hover:text-white mb-4 flex items-center gap-1 transition"
+          >
+            ← Back
+          </button>
+
+          <div className="bg-[#131722] border border-gray-800 rounded-xl p-6">
+            <div className="flex items-center gap-4 mb-6">
+              {token.logo ? (
+                <img
+                  src={token.logo}
+                  alt={token.symbol}
+                  className="w-16 h-16 rounded-full object-cover border border-gray-700"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-500/30 to-blue-500/30 flex items-center justify-center text-2xl font-bold text-white border border-gray-700">
+                  {token.symbol?.[0] || '?'}
+                </div>
+              )}
+              <div>
+                <h1 className="text-3xl font-bold text-white">
+                  {token.symbol}
+                </h1>
+                <p className="text-gray-400">{token.name}</p>
+                <span className="text-xs text-gray-500">{token.chain?.toUpperCase()}</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-[#1e232e] p-4 rounded-lg">
+                <p className="text-gray-400 text-xs">Price</p>
+                <p className="text-xl font-bold text-white">
+                  ${token.price?.toFixed(4) || 'N/A'}
+                </p>
+              </div>
+              <div className="bg-[#1e232e] p-4 rounded-lg">
+                <p className="text-gray-400 text-xs">24h Change</p>
+                <p className={`text-xl font-bold ${token.change_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {token.change_24h >= 0 ? '+' : ''}{token.change_24h?.toFixed(2)}%
+                </p>
+              </div>
+              <div className="bg-[#1e232e] p-4 rounded-lg">
+                <p className="text-gray-400 text-xs">Volume</p>
+                <p className="text-xl font-bold text-white">
+                  ${(token.volume_24h || 0).toLocaleString()}
+                </p>
+              </div>
+              <div className="bg-[#1e232e] p-4 rounded-lg">
+                <p className="text-gray-400 text-xs">Liquidity</p>
+                <p className="text-xl font-bold text-white">
+                  ${(token.liquidity || 0).toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
     </div>
   );
-}
+};
+
+export default TokenPage;

@@ -1,4 +1,4 @@
-// src/pages/Home.jsx (Sirf return statement ko update karo ya poora replace kar lo)
+// src/pages/Home.jsx
 import React, { useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
@@ -9,7 +9,7 @@ import TopCards from '../components/TopCards';
 import TokenTable from '../components/TokenTable';
 import WhaleActivity from '../components/WhaleActivity';
 import Footer from '../components/Footer';
-import { useTokens } from '../hooks/useTokens'; 
+import { useTokens } from '../hooks/useTokens';
 
 const Home = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -48,16 +48,15 @@ const Home = () => {
   }, [loading, hasMore, fetchMore]);
 
   return (
-    // 1. Root Wrapper: full screen width set karo aur hidden locks bypass karo
     <div className="min-h-screen w-full bg-[#0b0e14] text-white flex overflow-x-hidden">
-      
-      {/* 2. Sidebar Layout Wrapper: flex-shrink-0 lagaya taaki grid isko press na kare */}
+      {/* Sidebar - Fixed position */}
       <div className="flex-shrink-0 z-30">
         <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       </div>
 
-      {/* 3. Main Dashboard Side Area: Isko bacha hua width ('flex-1') do aur horizontal screen crash handle karo */}
+      {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-screen min-w-0">
+        {/* Header */}
         <Header
           onChainFilter={handleChainFilter}
           chainFilter={chainFilter}
@@ -67,37 +66,49 @@ const Home = () => {
           setIsSidebarOpen={setIsSidebarOpen}
         />
 
+        {/* Stats Bar */}
         <StatsBar />
+
+        {/* Trending Bar */}
         <TrendingBar />
+
+        {/* Top Cards */}
         <TopCards />
 
-        {/* Responsive Content Area */}
+        {/* Main Content Area */}
         <div className="flex-1 p-4 pt-0 w-full">
           <div className="flex flex-col lg:flex-row gap-4 w-full">
-            
-            {/* Table Panel Side */}
+            {/* Token Table */}
             <div className="flex-1 min-w-0">
               <div className="bg-[#131722] border border-gray-800 rounded-xl overflow-hidden w-full">
                 <TokenTable
                   tokens={tokens}
-                  onSelect={(token) => navigate(`/token/${token.pairAddress || token.token_address}`)}
+                  onSelect={(token) => {
+                    // ✅ Correct navigation with pair_address
+                    const address = token.pair_address || token.token_address || token.pairAddress;
+                    if (address) {
+                      navigate(`/token/${address}`);
+                    } else {
+                      console.error('No address for token:', token);
+                    }
+                  }}
                   watchlist={watchlist}
                   toggleWatchlist={toggleWatchlist}
                 />
 
-                {/* Loading indicator */}
+                {/* Loading Indicator */}
                 {loading && (
                   <div className="text-center py-4 text-gray-400 text-sm">
                     ⏳ Loading more tokens...
                   </div>
                 )}
 
-                {/* Sentinel for infinite scroll */}
+                {/* Infinite Scroll Sentinel */}
                 {!loading && hasMore && (
                   <div ref={lastTokenRef} className="h-4" />
                 )}
 
-                {/* All loaded */}
+                {/* All Loaded */}
                 {!hasMore && tokens.length > 0 && (
                   <div className="text-center py-4 text-gray-500 text-xs">
                     🎉 All {tokens.length} tokens loaded
@@ -106,14 +117,15 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Whale Activity Right Side Widget */}
+            {/* Right Sidebar Widgets */}
             <div className="w-full lg:w-72 xl:w-80 flex-shrink-0 space-y-4">
               <WhaleActivity />
+              {/* Additional widgets can go here */}
             </div>
-
           </div>
         </div>
 
+        {/* Footer */}
         <Footer />
       </div>
     </div>

@@ -98,7 +98,12 @@ const TokenTable = ({ tokens, onSelect, watchlist, toggleWatchlist }) => {
               <tr
                 key={tokenIdentifier}
                 className="border-b border-gray-800 hover:bg-[#1e232e] cursor-pointer transition group"
-                onClick={() => onSelect?.(token)}
+                onClick={() => {
+                  // ✅ Pass the full token object to onSelect
+                  if (onSelect) {
+                    onSelect(token);
+                  }
+                }}
               >
                 {/* Rank */}
                 <td className="py-3 px-2 text-gray-500 text-xs text-center">
@@ -110,7 +115,9 @@ const TokenTable = ({ tokens, onSelect, watchlist, toggleWatchlist }) => {
                   className="py-3 px-2"
                   onClick={(e) => {
                     e.stopPropagation();
-                    toggleWatchlist?.(tokenIdentifier);
+                    if (toggleWatchlist) {
+                      toggleWatchlist(tokenIdentifier);
+                    }
                   }}
                 >
                   {isWatchlisted ? (
@@ -120,7 +127,7 @@ const TokenTable = ({ tokens, onSelect, watchlist, toggleWatchlist }) => {
                   )}
                 </td>
 
-                {/* ✅ Token Info with Logo */}
+                {/* Token Info with Logo */}
                 <td className="py-3 px-2">
                   <div className="flex items-center gap-3">
                     <TokenLogo logo={token.logo} symbol={token.symbol} />
@@ -132,7 +139,7 @@ const TokenTable = ({ tokens, onSelect, watchlist, toggleWatchlist }) => {
                         </span>
                       </div>
                       <div className="flex items-center gap-1 mt-0.5">
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded ${getChainBadge(token.chain)}`}>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded border ${getChainBadge(token.chain)}`}>
                           {token.chain?.toUpperCase() || 'N/A'}
                         </span>
                         <span className="text-[10px] text-gray-500">{token.dex || ''}</span>
@@ -177,7 +184,7 @@ const TokenTable = ({ tokens, onSelect, watchlist, toggleWatchlist }) => {
 
                 {/* Chain */}
                 <td className="py-3 px-2 text-right">
-                  <span className={`text-[10px] px-2 py-0.5 rounded ${getChainBadge(token.chain)}`}>
+                  <span className={`text-[10px] px-2 py-0.5 rounded border ${getChainBadge(token.chain)}`}>
                     {token.chain?.toUpperCase() || 'N/A'}
                   </span>
                 </td>

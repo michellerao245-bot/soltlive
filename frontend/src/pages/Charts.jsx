@@ -44,10 +44,15 @@ const Charts = () => {
     }
   };
 
-  // Generate chart data when selected token changes
+  // ✅ Generate chart data when selected token changes (with symbol)
   useEffect(() => {
     if (selectedToken && selectedToken.price) {
-      const data = generateCandleData(selectedToken.price, 100);
+      // ✅ Pass symbol to generate unique chart
+      const data = generateCandleData(
+        selectedToken.price || 100,
+        selectedToken.symbol || 'TOKEN',
+        100
+      );
       setChartData(data);
     } else {
       setChartData([]);
@@ -66,10 +71,10 @@ const Charts = () => {
 
   const timeframes = ['1D', '1W', '1M', '3M', '1Y'];
 
-  // Memoize chart data to prevent unnecessary re-renders
+  // ✅ Memoize chart data
   const memoizedChartData = useMemo(() => chartData, [chartData]);
 
-  // Loading state
+  // ✅ Loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0b0e14] text-white flex">
@@ -221,7 +226,7 @@ const Charts = () => {
                   </>
                 ) : (
                   <div className="h-[450px] flex items-center justify-center text-gray-400">
-                    {selectedToken ? 'Generating chart data...' : 'Select a token to view chart'}
+                    {selectedToken ? '⏳ Generating chart data...' : '📊 Select a token to view chart'}
                   </div>
                 )}
               </div>

@@ -1,7 +1,10 @@
+// src/components/SearchDropdown.jsx
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const SearchDropdown = ({ searchQuery }) => {
+const SearchDropdown = ({ searchQuery, onClose }) => {
   const [recent, setRecent] = useState([]);
+  const navigate = useNavigate();
   const popular = ['PEPE', 'FLOKI', 'DOGE', 'BNB', 'SOL'];
 
   useEffect(() => {
@@ -13,6 +16,12 @@ const SearchDropdown = ({ searchQuery }) => {
     const updated = [term, ...recent.filter((t) => t !== term)].slice(0, 5);
     setRecent(updated);
     localStorage.setItem('recentSearches', JSON.stringify(updated));
+  };
+
+  const handleSearch = (term) => {
+    addRecent(term);
+    navigate(`/search?q=${term}`);
+    onClose?.();
   };
 
   // Mock search results
@@ -27,10 +36,10 @@ const SearchDropdown = ({ searchQuery }) => {
     <div className="absolute mt-1 w-full bg-[#1e232e] border border-gray-700 rounded-lg shadow-xl z-30 p-3 max-h-96 overflow-y-auto">
       {searchQuery && results ? (
         <div className="space-y-3">
-          <Section title="Tokens" items={results.tokens} />
-          <Section title="Pairs" items={results.pairs} />
-          <Section title="Wallets" items={results.wallets} />
-          <Section title="Contracts" items={results.contracts} />
+          <Section title="Tokens" items={results.tokens} onSelect={handleSearch} />
+          <Section title="Pairs" items={results.pairs} onSelect={handleSearch} />
+          <Section title="Wallets" items={results.wallets} onSelect={handleSearch} />
+          <Section title="Contracts" items={results.contracts} onSelect={handleSearch} />
         </div>
       ) : (
         <>
@@ -38,7 +47,11 @@ const SearchDropdown = ({ searchQuery }) => {
             <div className="mb-3">
               <p className="text-xs text-gray-400 mb-1">Recent</p>
               {recent.map((s) => (
-                <div key={s} className="px-3 py-1 hover:bg-[#2a2f3a] rounded cursor-pointer text-sm" onClick={() => addRecent(s)}>
+                <div 
+                  key={s} 
+                  className="px-3 py-1 hover:bg-[#2a2f3a] rounded cursor-pointer text-sm" 
+                  onClick={() => handleSearch(s)}
+                >
                   {s}
                 </div>
               ))}
@@ -47,7 +60,11 @@ const SearchDropdown = ({ searchQuery }) => {
           <div>
             <p className="text-xs text-gray-400 mb-1">Popular</p>
             {popular.map((s) => (
-              <div key={s} className="px-3 py-1 hover:bg-[#2a2f3a] rounded cursor-pointer text-sm" onClick={() => addRecent(s)}>
+              <div 
+                key={s} 
+                className="px-3 py-1 hover:bg-[#2a2f3a] rounded cursor-pointer text-sm" 
+                onClick={() => handleSearch(s)}
+              >
                 {s}
               </div>
             ))}
@@ -58,11 +75,15 @@ const SearchDropdown = ({ searchQuery }) => {
   );
 };
 
-const Section = ({ title, items }) => (
+const Section = ({ title, items, onSelect }) => (
   <div>
     <p className="text-xs text-gray-400 mb-1">{title}</p>
     {items.map((item) => (
-      <div key={item} className="px-3 py-1 hover:bg-[#2a2f3a] rounded cursor-pointer text-sm flex items-center justify-between">
+      <div 
+        key={item} 
+        className="px-3 py-1 hover:bg-[#2a2f3a] rounded cursor-pointer text-sm flex items-center justify-between"
+        onClick={() => onSelect(item)}
+      >
         <span>{item}</span>
         <span className="text-[10px] text-gray-500">→</span>
       </div>

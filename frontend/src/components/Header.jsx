@@ -1,20 +1,30 @@
+// src/components/Header.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Bell, DollarSign, LogIn, Globe, Settings, Menu, Sun, Moon,
   Search, Star, User, TrendingUp, TrendingDown, Rocket, Flame, BarChart2,
-  Wallet, ChevronDown, Monitor
+  Wallet, ChevronDown, Monitor, ExternalLink, RefreshCw
 } from 'lucide-react';
 import ChainFilter from './ChainFilter';
 import SearchDropdown from './SearchDropdown';
 
-const Header = ({ onChainFilter, chainFilter, toggleTheme, theme, isSidebarOpen, setIsSidebarOpen }) => {
+const Header = ({ 
+  onChainFilter, 
+  chainFilter, 
+  toggleTheme, 
+  theme, 
+  isSidebarOpen, 
+  setIsSidebarOpen,
+  onRefresh 
+}) => {
   const [search, setSearch] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [showMore, setShowMore] = useState(false);
   const searchRef = useRef(null);
   const navigate = useNavigate();
 
+  // Keyboard shortcut (Ctrl+K)
   useEffect(() => {
     const handler = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
@@ -27,6 +37,7 @@ const Header = ({ onChainFilter, chainFilter, toggleTheme, theme, isSidebarOpen,
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
+  // Quick links with working paths
   const quickLinks = [
     { label: 'Trending', icon: Flame, path: '/trending' },
     { label: 'New Pairs', icon: Rocket, path: '/new-pairs' },
@@ -35,10 +46,20 @@ const Header = ({ onChainFilter, chainFilter, toggleTheme, theme, isSidebarOpen,
     { label: 'MultiCharts', icon: Monitor, path: '/multicharts' },
   ];
 
+  const moreLinks = [
+    { label: 'Watchlist', icon: Star, path: '/watchlist' },
+    { label: 'Portfolio', icon: Wallet, path: '/portfolio' },
+    { label: 'Charts', icon: BarChart2, path: '/charts' },
+    { label: 'Smart Money', icon: ExternalLink, path: '/smart-money' },
+  ];
+
   return (
     <header className="bg-[#131722] border-b border-gray-800 px-3 py-2 flex items-center justify-between sticky top-0 z-20 gap-2 flex-wrap">
       {/* Mobile Menu */}
-      <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="lg:hidden text-gray-400 hover:text-white">
+      <button 
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
+        className="lg:hidden text-gray-400 hover:text-white transition"
+      >
         <Menu size={22} />
       </button>
 
@@ -52,16 +73,43 @@ const Header = ({ onChainFilter, chainFilter, toggleTheme, theme, isSidebarOpen,
         {quickLinks.map((link) => (
           <button
             key={link.path}
-            onClick={() => navigate(link.path)}
+            onClick={() => {
+              navigate(link.path);
+              setShowMore(false);
+            }}
             className="flex items-center gap-1 px-2 py-1 rounded hover:bg-[#1e232e] text-gray-400 hover:text-white transition"
           >
             <link.icon size={14} />
             <span>{link.label}</span>
           </button>
         ))}
-        <button onClick={() => setShowMore(!showMore)} className="px-2 py-1 text-gray-400 hover:text-white">
-          <ChevronDown size={14} />
-        </button>
+        
+        {/* More dropdown */}
+        <div className="relative">
+          <button 
+            onClick={() => setShowMore(!showMore)} 
+            className="px-2 py-1 text-gray-400 hover:text-white hover:bg-[#1e232e] rounded transition"
+          >
+            <ChevronDown size={14} />
+          </button>
+          {showMore && (
+            <div className="absolute right-0 mt-1 w-48 bg-[#1e232e] border border-gray-700 rounded-lg shadow-xl py-1 z-30">
+              {moreLinks.map((link) => (
+                <button
+                  key={link.path}
+                  onClick={() => {
+                    navigate(link.path);
+                    setShowMore(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-[#2a2f3a] hover:text-white transition"
+                >
+                  <link.icon size={14} />
+                  <span>{link.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Search */}
@@ -73,35 +121,69 @@ const Header = ({ onChainFilter, chainFilter, toggleTheme, theme, isSidebarOpen,
             type="text"
             placeholder="Search token, pair, or address... (Ctrl+K)"
             value={search}
-            onChange={(e) => { setSearch(e.target.value); setShowDropdown(true); }}
+            onChange={(e) => { 
+              setSearch(e.target.value); 
+              setShowDropdown(true); 
+            }}
             onFocus={() => setShowDropdown(true)}
             onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
             className="w-full bg-[#1e232e] border border-gray-700 rounded-lg pl-9 pr-12 py-1.5 outline-none focus:border-green-500 text-white placeholder-gray-400 text-sm"
           />
           <kbd className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-500 bg-gray-800 px-1.5 py-0.5 rounded border border-gray-700">Ctrl+K</kbd>
         </div>
-        {showDropdown && <SearchDropdown searchQuery={search} />}
+        {showDropdown && <SearchDropdown searchQuery={search} onClose={() => setShowDropdown(false)} />}
       </div>
 
       {/* Right Side */}
       <div className="flex items-center gap-2">
+        {/* Live Indicator */}
         <span className="flex items-center gap-1 text-green-400 text-[10px] font-medium hidden md:flex">
           <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span> LIVE
         </span>
-        <button className="text-gray-400 hover:text-white relative hidden lg:block">
+        
+        {/* Refresh Button */}
+        {onRefresh && (
+          <button 
+            onClick={onRefresh} 
+            className="text-gray-400 hover:text-white transition hidden lg:block"
+            title="Refresh data"
+          >
+            <RefreshCw size={16} />
+          </button>
+        )}
+        
+        {/* Notification */}
+        <button className="text-gray-400 hover:text-white relative hidden lg:block transition">
           <Bell size={16} />
           <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
         </button>
-        <button className="text-gray-400 hover:text-white hidden md:block"><Globe size={16} /></button>
-        <button className="text-gray-400 hover:text-white hidden lg:block"><DollarSign size={14} /></button>
-        <button className="text-gray-400 hover:text-white hidden md:block"><Star size={16} /></button>
-        <button onClick={toggleTheme} className="text-gray-400 hover:text-white hidden sm:block">
+        
+        {/* Globe */}
+        <button className="text-gray-400 hover:text-white hidden md:block transition"><Globe size={16} /></button>
+        
+        {/* Currency */}
+        <button className="text-gray-400 hover:text-white hidden lg:block transition"><DollarSign size={14} /></button>
+        
+        {/* Watchlist */}
+        <button 
+          onClick={() => navigate('/watchlist')} 
+          className="text-gray-400 hover:text-white hidden md:block transition"
+        >
+          <Star size={16} />
+        </button>
+        
+        {/* Theme Toggle */}
+        <button onClick={toggleTheme} className="text-gray-400 hover:text-white hidden sm:block transition">
           {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
         </button>
+        
+        {/* Connect Wallet */}
         <button className="bg-green-500/20 text-green-400 px-3 py-1 rounded-lg text-xs font-medium flex items-center gap-1 hover:bg-green-500/30 transition">
           <LogIn size={14} /> Connect
         </button>
-        <button className="text-gray-400 hover:text-white hidden sm:block"><User size={16} /></button>
+        
+        {/* User Profile */}
+        <button className="text-gray-400 hover:text-white hidden sm:block transition"><User size={16} /></button>
       </div>
     </header>
   );

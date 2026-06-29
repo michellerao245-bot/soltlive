@@ -12,15 +12,21 @@ import RugCheck from "./pages/RugCheck";
 import Holders from "./pages/Holders";
 import Leaderboard from "./pages/Leaderboard";
 import Settings from "./pages/Settings";
+import Gainers from "./pages/Gainers";
+import Losers from "./pages/Losers";
+import MultiCharts from "./pages/MultiCharts";
+import Search from "./pages/Search";
+import TokenDetails from "./pages/TokenDetails";
 
 export default function App() {
   return (
     <Routes>
-      {/* Main Routes */}
+      {/* ✅ Main Routes */}
       <Route path="/" element={<Home />} />
       <Route path="/token/:pairAddress" element={<TokenPage />} />
+      <Route path="/token/:address" element={<TokenDetails />} />
       
-      {/* ✅ All Sidebar Routes - Working! */}
+      {/* ✅ Sidebar Navigation Routes */}
       <Route path="/trending" element={<Trending />} />
       <Route path="/new-pairs" element={<NewPairs />} />
       <Route path="/watchlist" element={<Watchlist />} />
@@ -31,6 +37,14 @@ export default function App() {
       <Route path="/holders" element={<Holders />} />
       <Route path="/leaderboard" element={<Leaderboard />} />
       <Route path="/settings" element={<Settings />} />
+      
+      {/* ✅ Header Quick Links Routes */}
+      <Route path="/gainers" element={<Gainers />} />
+      <Route path="/losers" element={<Losers />} />
+      <Route path="/multicharts" element={<MultiCharts />} />
+      
+      {/* ✅ Search Route */}
+      <Route path="/search" element={<Search />} />
     </Routes>
   );
 }

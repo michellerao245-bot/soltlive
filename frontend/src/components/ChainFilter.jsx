@@ -1,3 +1,4 @@
+// src/components/ChainFilter.jsx
 import React from 'react';
 
 const chains = [

@@ -48,11 +48,53 @@ const Charts = () => {
   useEffect(() => {
     if (selectedToken && selectedToken.price) {
       // ✅ Pass symbol to generate unique chart
-      const data = generateCandleData(
-        selectedToken.price || 100,
-        selectedToken.symbol || 'TOKEN',
-        100
-      );
+     let candles = 100;
+
+switch (timeframe) {
+  case '10M':
+    candles = 10;
+    break;
+  case '15M':
+    candles = 15;
+    break;
+  case '30M':
+    candles = 30;
+    break;
+  case '1H':
+    candles = 60;
+    break;
+  case '5H':
+    candles = 300;
+    break;
+  case '12H':
+    candles = 720;
+    break;
+  case '24H':
+    candles = 1440;
+    break;
+  case '1W':
+    candles = 7 * 24;
+    break;
+  case '1M':
+    candles = 30 * 24;
+    break;
+  case '3M':
+    candles = 90 * 24;
+    break;
+  case '1Y':
+    candles = 365 * 24;
+    break;
+  default:
+    candles = 100;
+}
+
+const data = generateCandleData(
+  selectedToken.price || 100,
+  selectedToken.symbol || 'TOKEN',
+  candles
+);
+
+setChartData(data);
       setChartData(data);
     } else {
       setChartData([]);
@@ -69,8 +111,19 @@ const Charts = () => {
     setSelectedToken(token || null);
   };
 
-  const timeframes = ['1D', '1W', '1M', '3M', '1Y'];
-
+ const timeframes = [
+  '10M',
+  '15M',
+  '30M',
+  '1H',
+  '5H',
+  '12H',
+  '24H',
+  '1W',
+  '1M',
+  '3M',
+  '1Y'
+];
   // ✅ Memoize chart data
   const memoizedChartData = useMemo(() => chartData, [chartData]);
 

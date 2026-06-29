@@ -63,11 +63,28 @@ const TokenPage = () => {
   };
 
   // Generate chart data
-  const chartData = token?.price 
-    ? generateCandleData(token.price, token.symbol || 'TOKEN', 100)
-    : [];
+ const chartData = token?.price
+  ? generateCandleData(
+      token.price,
+      token.symbol || "TOKEN",
+      100,
+      timeframe
+    )
+  : [];
 
-  const timeframes = ['1D', '1W', '1M', '3M', '1Y'];
+  const timeframes = [
+  "10M",
+  "15M",
+  "30M",
+  "1H",
+  "5H",
+  "12H",
+  "24H",
+  "1W",
+  "1M",
+  "3M",
+  "1Y",
+];
 
   // Loading state
   if (loading) {

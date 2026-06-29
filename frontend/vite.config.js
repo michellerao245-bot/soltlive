@@ -12,7 +12,7 @@ export default defineConfig({
       }
     }
   },
-  // ✅ Alias hatao
+  // ✅ Alias hatao - dynamic import use kar rahe ho
   optimizeDeps: {
     include: ['lightweight-charts'],
   },

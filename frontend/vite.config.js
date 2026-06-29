@@ -15,22 +15,12 @@ export default defineConfig({
     }
   },
   
-  // ✅ Build configuration
+  // ✅ Build configuration (remove manualChunks)
   build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          // ✅ Separate vendor chunks for better caching
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          charts: ['lightweight-charts'],
-        },
-      },
-    },
-    // ✅ Reduce chunk size warnings
     chunkSizeWarningLimit: 1000,
   },
   
-  // ✅ Resolve aliases for problematic packages
+  // ✅ Resolve aliases
   resolve: {
     alias: {
       // ✅ Fix for lightweight-charts build issue

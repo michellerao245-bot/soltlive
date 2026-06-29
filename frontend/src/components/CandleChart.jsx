@@ -1,6 +1,5 @@
 // src/components/CandleChart.jsx
-import React, { useEffect, useRef, useState } from "react";
-import { createChart } from "lightweight-charts";
+import React, { useEffect, useRef, useState } from 'react';
 
 const CandleChart = ({ data, height = 400 }) => {
   const chartContainerRef = useRef(null);
@@ -10,37 +9,21 @@ const CandleChart = ({ data, height = 400 }) => {
 
   useEffect(() => {
     let isMounted = true;
-    let chartInstance = null;
-    let candleSeries = null;
 
     const loadChart = async () => {
       try {
-        // ✅ Problem 2: Direct ref check (No containerReady required)
-        if (!chartContainerRef.current) {
-          return;
-        }
-
-        // ✅ Check if data exists
         if (!data || data.length === 0) {
-          console.warn('📊 No data for chart');
-          if (isMounted) {
-            setIsLoaded(true);
-          }
+          if (isMounted) setIsLoaded(true);
           return;
         }
 
-        // ✅ Clear previous chart instance safely
-        if (chartRef.current) {
-          chartRef.current.remove();
-          chartRef.current = null;
-        }
+        // ✅ Dynamic import - Vercel build me kaam karega
+        const { createChart } = await import('lightweight-charts');
 
-        // ✅ Get container width
-        const containerWidth = chartContainerRef.current.clientWidth || 600;
+        if (!chartContainerRef.current) return;
 
-        // ✅ Create chart
-        chartInstance = createChart(chartContainerRef.current, {
-          width: containerWidth,
+        const chart = createChart(chartContainerRef.current, {
+          width: chartContainerRef.current.clientWidth || 600,
           height: height,
           layout: {
             background: { color: '#131722' },
@@ -50,12 +33,8 @@ const CandleChart = ({ data, height = 400 }) => {
             vertLines: { color: '#2a2f3a' },
             horzLines: { color: '#2a2f3a' },
           },
-          crosshair: {
-            mode: 0,
-          },
-          rightPriceScale: {
-            borderColor: '#2a2f3a',
-          },
+          crosshair: { mode: 0 },
+          rightPriceScale: { borderColor: '#2a2f3a' },
           timeScale: {
             borderColor: '#2a2f3a',
             timeVisible: true,
@@ -63,10 +42,9 @@ const CandleChart = ({ data, height = 400 }) => {
           },
         });
 
-        chartRef.current = chartInstance;
+        chartRef.current = chart;
 
-        // ✅ Add Candlestick Series
-        candleSeries = chartInstance.addCandlestickSeries({
+        const candleSeries = chart.addCandlestickSeries({
           upColor: '#22c55e',
           downColor: '#ef4444',
           borderDownColor: '#ef4444',
@@ -75,17 +53,12 @@ const CandleChart = ({ data, height = 400 }) => {
           wickUpColor: '#22c55e',
         });
 
-        // ✅ Set data
         if (data && data.length > 0) {
           candleSeries.setData(data);
         }
 
-        if (isMounted) {
-          setIsLoaded(true);
-          setError(null);
-        }
+        if (isMounted) setIsLoaded(true);
 
-        // ✅ Resize handler
         const handleResize = () => {
           if (chartRef.current && chartContainerRef.current) {
             chartRef.current.resize(
@@ -97,7 +70,6 @@ const CandleChart = ({ data, height = 400 }) => {
 
         window.addEventListener('resize', handleResize);
 
-        // ✅ Cleanup function inside loadChart
         return () => {
           window.removeEventListener('resize', handleResize);
           if (chartRef.current) {
@@ -107,77 +79,61 @@ const CandleChart = ({ data, height = 400 }) => {
         };
 
       } catch (err) {
-        console.error('❌ Chart loading error:', err);
+        console.error('Chart error:', err);
         if (isMounted) {
-          setError(err.message || 'Failed to load chart');
+          setError(err.message);
           setIsLoaded(true);
         }
       }
     };
 
-    // ✅ Small delay to ensure DOM layout is completely painted
-    const timer = setTimeout(() => {
-      loadChart();
-    }, 100);
+    loadChart();
 
     return () => {
-      clearTimeout(timer);
       isMounted = false;
       if (chartRef.current) {
         chartRef.current.remove();
         chartRef.current = null;
       }
     };
-  }, [data, height]); // ✅ Problem 3: Clean Dependency Array
+  }, [data, height]);
 
-  // ✅ Error state (renders inside bounds)
+  // Loading state
+  if (!isLoaded) {
+    return (
+      <div className="w-full rounded-lg overflow-hidden bg-[#131722] border border-gray-800 flex items-center justify-center" style={{ height }}>
+        <div className="text-gray-400 text-sm flex flex-col items-center gap-2">
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-green-500 border-t-transparent"></div>
+          <span>Loading chart...</span>
+        </div>
+      </div>
+    );
+  }
+
   if (error) {
     return (
-      <div
-        className="w-full rounded-lg overflow-hidden bg-[#131722] border border-red-800 flex items-center justify-center"
-        style={{ height: height }}
-      >
+      <div className="w-full rounded-lg overflow-hidden bg-[#131722] border border-red-800 flex items-center justify-center" style={{ height }}>
         <div className="text-red-400 text-sm text-center px-4">
-          <p>⚠️ {error}</p>
-          <p className="text-gray-500 text-xs mt-1">Try selecting a different token</p>
+          ⚠️ {error}
         </div>
       </div>
     );
   }
 
-  // ✅ No data state
   if (!data || data.length === 0) {
     return (
-      <div
-        className="w-full rounded-lg overflow-hidden bg-[#131722] border border-gray-800 flex items-center justify-center"
-        style={{ height: height }}
-      >
-        <div className="text-gray-400 text-sm">
-          📊 No data available for this token
-        </div>
+      <div className="w-full rounded-lg overflow-hidden bg-[#131722] border border-gray-800 flex items-center justify-center" style={{ height }}>
+        <div className="text-gray-400 text-sm">📊 No data available</div>
       </div>
     );
   }
 
-  // ✅ Fix Sabse Bada Bug: DOM Container remains present instantly!
   return (
     <div
-      className="relative w-full rounded-lg overflow-hidden bg-[#131722] border border-gray-800"
-      style={{ height }}
-    >
-      {!isLoaded && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#131722] z-10 gap-2">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-green-500 border-t-transparent"></div>
-          <div className="text-gray-400 text-sm">Loading chart...</div>
-        </div>
-      )}
-
-      <div
-        ref={chartContainerRef}
-        className="w-full h-full"
-        style={{ minHeight: height }}
-      />
-    </div>
+      ref={chartContainerRef}
+      className="w-full rounded-lg overflow-hidden bg-[#131722] border border-gray-800"
+      style={{ height, minHeight: height }}
+    />
   );
 };
 

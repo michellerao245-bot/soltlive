@@ -6,44 +6,40 @@ const CandleChart = ({ data, height = 400 }) => {
   const chartRef = useRef(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState(null);
+  const [containerReady, setContainerReady] = useState(false);
 
+  // ✅ Step 1: Check if container is ready
+  useEffect(() => {
+    if (chartContainerRef.current) {
+      setContainerReady(true);
+    }
+  }, []);
+
+  // ✅ Step 2: Load chart only when container is ready
   useEffect(() => {
     let isMounted = true;
+    let loadTimeout = null;
 
     const loadChart = async () => {
+      // ✅ Wait for container
+      if (!containerReady || !chartContainerRef.current) {
+        console.log('⏳ Waiting for container...');
+        return;
+      }
+
+      // ✅ Check data
+      if (!data || data.length === 0) {
+        if (isMounted) {
+          setIsLoaded(true);
+        }
+        return;
+      }
+
       try {
-        // ✅ Check data
-        if (!data || data.length === 0) {
-          if (isMounted) {
-            setIsLoaded(true);
-            setError('No data available');
-          }
-          return;
-        }
+        // ✅ Dynamic import
+        const { createChart } = await import('lightweight-charts');
 
-        // ✅ Dynamic import with better error handling
-        let createChart;
-        try {
-          const module = await import('lightweight-charts');
-          createChart = module.createChart;
-        } catch (importErr) {
-          console.error('Import error:', importErr);
-          // ✅ Fallback: try require
-          try {
-            const module = require('lightweight-charts');
-            createChart = module.createChart || module.default?.createChart;
-          } catch (requireErr) {
-            throw new Error('Could not load chart library: ' + requireErr.message);
-          }
-        }
-
-        if (!createChart) {
-          throw new Error('createChart function not found');
-        }
-
-        if (!chartContainerRef.current) {
-          throw new Error('Chart container not ready');
-        }
+        if (!chartContainerRef.current) return;
 
         // ✅ Clear previous chart
         if (chartRef.current) {
@@ -52,11 +48,11 @@ const CandleChart = ({ data, height = 400 }) => {
         }
 
         // ✅ Get container width
-        const containerWidth = chartContainerRef.current.clientWidth || 600;
+        const width = chartContainerRef.current.clientWidth || 600;
 
         // ✅ Create chart
         const chart = createChart(chartContainerRef.current, {
-          width: containerWidth,
+          width: width,
           height: height,
           layout: {
             background: { color: '#131722' },
@@ -66,12 +62,8 @@ const CandleChart = ({ data, height = 400 }) => {
             vertLines: { color: '#2a2f3a' },
             horzLines: { color: '#2a2f3a' },
           },
-          crosshair: {
-            mode: 0,
-          },
-          rightPriceScale: {
-            borderColor: '#2a2f3a',
-          },
+          crosshair: { mode: 0 },
+          rightPriceScale: { borderColor: '#2a2f3a' },
           timeScale: {
             borderColor: '#2a2f3a',
             timeVisible: true,
@@ -81,7 +73,7 @@ const CandleChart = ({ data, height = 400 }) => {
 
         chartRef.current = chart;
 
-        // ✅ Add Candlestick Series
+        // ✅ Add candlestick series
         const candleSeries = chart.addCandlestickSeries({
           upColor: '#22c55e',
           downColor: '#ef4444',
@@ -91,7 +83,6 @@ const CandleChart = ({ data, height = 400 }) => {
           wickUpColor: '#22c55e',
         });
 
-        // ✅ Set data
         if (data && data.length > 0) {
           candleSeries.setData(data);
         }
@@ -130,20 +121,20 @@ const CandleChart = ({ data, height = 400 }) => {
       }
     };
 
-    // ✅ Small delay to ensure DOM is ready
-    const timer = setTimeout(() => {
+    // ✅ Delay to ensure DOM is fully ready
+    loadTimeout = setTimeout(() => {
       loadChart();
-    }, 200);
+    }, 300);
 
     return () => {
-      clearTimeout(timer);
+      clearTimeout(loadTimeout);
       isMounted = false;
       if (chartRef.current) {
         chartRef.current.remove();
         chartRef.current = null;
       }
     };
-  }, [data, height]);
+  }, [data, height, containerReady]);
 
   // ✅ Loading state
   if (!isLoaded) {

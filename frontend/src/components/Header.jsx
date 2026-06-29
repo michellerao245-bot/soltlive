@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Bell, DollarSign, LogIn, Globe, Settings, Menu, Sun, Moon,
   Search, Star, User, TrendingUp, TrendingDown, Rocket, Flame, BarChart2,
-  Wallet, ChevronDown, Monitor, ExternalLink, RefreshCw
+  Wallet, ChevronDown, Monitor, RefreshCw
 } from 'lucide-react';
 import ChainFilter from './ChainFilter';
 import SearchDropdown from './SearchDropdown';
@@ -50,7 +50,7 @@ const Header = ({
     { label: 'Watchlist', icon: Star, path: '/watchlist' },
     { label: 'Portfolio', icon: Wallet, path: '/portfolio' },
     { label: 'Charts', icon: BarChart2, path: '/charts' },
-    { label: 'Smart Money', icon: ExternalLink, path: '/smart-money' },
+    { label: 'Smart Money', icon: Settings, path: '/smart-money' },
   ];
 
   return (
@@ -141,35 +141,29 @@ const Header = ({
           <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span> LIVE
         </span>
         
-        {/* Refresh Button */}
-        {onRefresh && (
-          <button 
-            onClick={onRefresh} 
-            className="text-gray-400 hover:text-white transition hidden lg:block"
-            title="Refresh data"
-          >
-            <RefreshCw size={16} />
-          </button>
-        )}
-        
-        {/* Notification */}
-        <button className="text-gray-400 hover:text-white relative hidden lg:block transition">
-          <Bell size={16} />
-          <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
-        </button>
-        
-        {/* Globe */}
-        <button className="text-gray-400 hover:text-white hidden md:block transition"><Globe size={16} /></button>
-        
-        {/* Currency */}
-        <button className="text-gray-400 hover:text-white hidden lg:block transition"><DollarSign size={14} /></button>
-        
-        {/* Watchlist */}
+        {/* ✅ Watchlist Button - Working */}
         <button 
           onClick={() => navigate('/watchlist')} 
-          className="text-gray-400 hover:text-white hidden md:block transition"
+          className="text-gray-400 hover:text-white transition hidden md:block"
+          title="Watchlist"
         >
           <Star size={16} />
+        </button>
+        
+        {/* ✅ Currency Button - Toggle */}
+        <button 
+          onClick={() => alert('Currency toggle coming soon!')} 
+          className="text-gray-400 hover:text-white hidden lg:block transition"
+        >
+          <DollarSign size={14} />
+        </button>
+        
+        {/* ✅ Connect Wallet Button */}
+        <button 
+          onClick={() => alert('Wallet connect coming soon!')} 
+          className="bg-green-500/20 text-green-400 px-3 py-1 rounded-lg text-xs font-medium flex items-center gap-1 hover:bg-green-500/30 transition"
+        >
+          <LogIn size={14} /> Connect
         </button>
         
         {/* Theme Toggle */}
@@ -177,13 +171,13 @@ const Header = ({
           {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
         </button>
         
-        {/* Connect Wallet */}
-        <button className="bg-green-500/20 text-green-400 px-3 py-1 rounded-lg text-xs font-medium flex items-center gap-1 hover:bg-green-500/30 transition">
-          <LogIn size={14} /> Connect
-        </button>
-        
         {/* User Profile */}
-        <button className="text-gray-400 hover:text-white hidden sm:block transition"><User size={16} /></button>
+        <button 
+          onClick={() => navigate('/settings')} 
+          className="text-gray-400 hover:text-white hidden sm:block transition"
+        >
+          <User size={16} />
+        </button>
       </div>
     </header>
   );

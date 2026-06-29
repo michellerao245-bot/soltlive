@@ -1,5 +1,5 @@
 // src/pages/Charts.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
@@ -16,8 +16,10 @@ const Charts = () => {
   const [selectedToken, setSelectedToken] = useState(null);
   const [loading, setLoading] = useState(true);
   const [timeframe, setTimeframe] = useState('1D');
+  const [chartData, setChartData] = useState([]);
   const navigate = useNavigate();
 
+  // Load tokens
   useEffect(() => {
     loadTokens();
   }, [chainFilter]);
@@ -26,31 +28,72 @@ const Charts = () => {
     setLoading(true);
     try {
       const data = await fetchTokens(chainFilter, 1, 100);
-      if (data.success) {
+      if (data.success && data.data.length > 0) {
         setTokens(data.data);
-        if (data.data.length > 0) {
-          setSelectedToken(data.data[0]);
-        }
+        setSelectedToken(data.data[0]);
+      } else {
+        setTokens([]);
+        setSelectedToken(null);
       }
     } catch (error) {
       console.error('Error loading tokens:', error);
+      setTokens([]);
+      setSelectedToken(null);
     } finally {
       setLoading(false);
     }
   };
+
+  // Generate chart data when selected token changes
+  useEffect(() => {
+    if (selectedToken && selectedToken.price) {
+      const data = generateCandleData(selectedToken.price, 100);
+      setChartData(data);
+    } else {
+      setChartData([]);
+    }
+  }, [selectedToken, timeframe]);
 
   const toggleTheme = () => {
     setTheme(t => (t === 'dark' ? 'light' : 'dark'));
     document.documentElement.classList.toggle('light');
   };
 
-  // Generate candle data for selected token
-  const candleData = selectedToken 
-    ? generateCandleData(selectedToken.price || 100, 100)
-    : [];
+  const handleTokenSelect = (e) => {
+    const token = tokens.find(t => t.pair_address === e.target.value);
+    setSelectedToken(token || null);
+  };
 
-  // Timeframe options
   const timeframes = ['1D', '1W', '1M', '3M', '1Y'];
+
+  // Memoize chart data to prevent unnecessary re-renders
+  const memoizedChartData = useMemo(() => chartData, [chartData]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0b0e14] text-white flex">
+        <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+        <div className="flex-1 flex flex-col min-h-screen">
+          <Header
+            onChainFilter={setChainFilter}
+            chainFilter={chainFilter}
+            toggleTheme={toggleTheme}
+            theme={theme}
+            isSidebarOpen={isSidebarOpen}
+            setIsSidebarOpen={setIsSidebarOpen}
+          />
+          <div className="flex-1 p-4 flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-green-500 border-t-transparent mx-auto mb-4"></div>
+              <p className="text-gray-400">Loading tokens...</p>
+            </div>
+          </div>
+          <Footer />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0b0e14] text-white flex">
@@ -65,120 +108,128 @@ const Charts = () => {
           setIsSidebarOpen={setIsSidebarOpen}
         />
         <div className="flex-1 p-4">
-          <div className="flex flex-wrap items-center justify-between mb-4">
+          {/* Header */}
+          <div className="flex flex-wrap items-center justify-between mb-4 gap-2">
             <h1 className="text-2xl font-bold text-white flex items-center gap-2">
               📊 Charts
             </h1>
-            
+
             {/* Token Selector */}
             <select
-              className="bg-[#1e232e] border border-gray-700 rounded-lg px-4 py-2 outline-none focus:border-green-500 text-white"
-              onChange={(e) => {
-                const token = tokens.find(t => t.pair_address === e.target.value);
-                setSelectedToken(token);
-              }}
+              className="bg-[#1e232e] border border-gray-700 rounded-lg px-4 py-2 outline-none focus:border-green-500 text-white min-w-[180px]"
+              onChange={handleTokenSelect}
               value={selectedToken?.pair_address || ''}
             >
-              {tokens.map((token) => (
-                <option key={token.pair_address} value={token.pair_address}>
-                  {token.symbol} - ${token.price?.toFixed(4) || 'N/A'}
-                </option>
-              ))}
+              {tokens.length === 0 ? (
+                <option value="">No tokens available</option>
+              ) : (
+                tokens.map((token) => (
+                  <option key={token.pair_address} value={token.pair_address}>
+                    {token.symbol} - ${token.price?.toFixed(4) || 'N/A'}
+                  </option>
+                ))
+              )}
             </select>
           </div>
 
           {/* Token Info Bar */}
-          {selectedToken && (
-            <div className="bg-[#131722] border border-gray-800 rounded-xl p-4 mb-4">
-              <div className="flex flex-wrap items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-bold text-white">
-                    {selectedToken.symbol} / USD
-                  </h2>
-                  <p className="text-gray-400 text-sm">{selectedToken.name}</p>
-                </div>
-                <div className="flex items-center gap-6">
-                  <div>
-                    <p className="text-gray-400 text-xs">Price</p>
-                    <p className="text-2xl font-bold text-white">
-                      ${selectedToken.price?.toFixed(4) || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400 text-xs">24h Change</p>
-                    <p className={`text-lg font-bold ${
-                      selectedToken.change_24h >= 0 ? 'text-green-400' : 'text-red-400'
-                    }`}>
-                      {selectedToken.change_24h >= 0 ? '+' : ''}{selectedToken.change_24h?.toFixed(2)}%
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400 text-xs">Volume</p>
-                    <p className="text-lg font-bold text-white">
-                      ${(selectedToken.volume_24h || 0).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Timeframe Selector */}
-              <div className="flex gap-2 mt-4">
-                {timeframes.map((tf) => (
-                  <button
-                    key={tf}
-                    onClick={() => setTimeframe(tf)}
-                    className={`px-3 py-1 rounded-lg text-xs font-medium transition ${
-                      timeframe === tf
-                        ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                        : 'bg-[#1e232e] text-gray-400 hover:text-white hover:bg-[#2a2f3a]'
-                    }`}
-                  >
-                    {tf}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Candle Chart */}
           {selectedToken ? (
-            <div className="bg-[#131722] border border-gray-800 rounded-xl p-4">
-              <CandleChart 
-                data={candleData} 
-                height={450}
-              />
-              
-              {/* Stats below chart */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                <div className="bg-[#1e232e] p-3 rounded-lg">
-                  <p className="text-gray-400 text-xs">Open</p>
-                  <p className="text-white font-bold">
-                    ${candleData[candleData.length - 1]?.open?.toFixed(4) || 'N/A'}
-                  </p>
+            <>
+              <div className="bg-[#131722] border border-gray-800 rounded-xl p-4 mb-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h2 className="text-xl font-bold text-white">
+                      {selectedToken.symbol} / USD
+                    </h2>
+                    <p className="text-gray-400 text-sm">{selectedToken.name}</p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-4">
+                    <div>
+                      <p className="text-gray-400 text-xs">Price</p>
+                      <p className="text-2xl font-bold text-white">
+                        ${selectedToken.price?.toFixed(4) || 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-xs">24h Change</p>
+                      <p className={`text-lg font-bold ${
+                        selectedToken.change_24h >= 0 ? 'text-green-400' : 'text-red-400'
+                      }`}>
+                        {selectedToken.change_24h >= 0 ? '+' : ''}{selectedToken.change_24h?.toFixed(2)}%
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-xs">Volume</p>
+                      <p className="text-lg font-bold text-white">
+                        ${(selectedToken.volume_24h || 0).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-[#1e232e] p-3 rounded-lg">
-                  <p className="text-gray-400 text-xs">High</p>
-                  <p className="text-white font-bold">
-                    ${candleData.reduce((max, d) => d.high > max ? d.high : max, 0)?.toFixed(4) || 'N/A'}
-                  </p>
-                </div>
-                <div className="bg-[#1e232e] p-3 rounded-lg">
-                  <p className="text-gray-400 text-xs">Low</p>
-                  <p className="text-white font-bold">
-                    ${candleData.reduce((min, d) => d.low < min ? d.low : min, Infinity)?.toFixed(4) || 'N/A'}
-                  </p>
-                </div>
-                <div className="bg-[#1e232e] p-3 rounded-lg">
-                  <p className="text-gray-400 text-xs">Close</p>
-                  <p className="text-white font-bold">
-                    ${candleData[candleData.length - 1]?.close?.toFixed(4) || 'N/A'}
-                  </p>
+
+                {/* Timeframe Selector */}
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {timeframes.map((tf) => (
+                    <button
+                      key={tf}
+                      onClick={() => setTimeframe(tf)}
+                      className={`px-3 py-1 rounded-lg text-xs font-medium transition ${
+                        timeframe === tf
+                          ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                          : 'bg-[#1e232e] text-gray-400 hover:text-white hover:bg-[#2a2f3a]'
+                      }`}
+                    >
+                      {tf}
+                    </button>
+                  ))}
                 </div>
               </div>
-            </div>
+
+              {/* Candle Chart */}
+              <div className="bg-[#131722] border border-gray-800 rounded-xl p-4">
+                {memoizedChartData && memoizedChartData.length > 0 ? (
+                  <>
+                    <CandleChart data={memoizedChartData} height={450} />
+
+                    {/* Stats below chart */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                      <div className="bg-[#1e232e] p-3 rounded-lg">
+                        <p className="text-gray-400 text-xs">Open</p>
+                        <p className="text-white font-bold">
+                          ${memoizedChartData[memoizedChartData.length - 1]?.open?.toFixed(4) || 'N/A'}
+                        </p>
+                      </div>
+                      <div className="bg-[#1e232e] p-3 rounded-lg">
+                        <p className="text-gray-400 text-xs">High</p>
+                        <p className="text-white font-bold">
+                          ${Math.max(...memoizedChartData.map(d => d.high))?.toFixed(4) || 'N/A'}
+                        </p>
+                      </div>
+                      <div className="bg-[#1e232e] p-3 rounded-lg">
+                        <p className="text-gray-400 text-xs">Low</p>
+                        <p className="text-white font-bold">
+                          ${Math.min(...memoizedChartData.map(d => d.low))?.toFixed(4) || 'N/A'}
+                        </p>
+                      </div>
+                      <div className="bg-[#1e232e] p-3 rounded-lg">
+                        <p className="text-gray-400 text-xs">Close</p>
+                        <p className="text-white font-bold">
+                          ${memoizedChartData[memoizedChartData.length - 1]?.close?.toFixed(4) || 'N/A'}
+                        </p>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="h-[450px] flex items-center justify-center text-gray-400">
+                    {selectedToken ? 'Generating chart data...' : 'Select a token to view chart'}
+                  </div>
+                )}
+              </div>
+            </>
           ) : (
-            <div className="bg-[#131722] border border-gray-800 rounded-xl p-8 text-center">
-              <p className="text-gray-400">Select a token to view chart</p>
+            <div className="bg-[#131722] border border-gray-800 rounded-xl p-12 text-center">
+              <p className="text-gray-400 text-lg">📊 No tokens available</p>
+              <p className="text-gray-500 text-sm mt-2">Try changing the chain filter</p>
             </div>
           )}
         </div>

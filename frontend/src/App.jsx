@@ -1,7 +1,7 @@
 // src/App.jsx
 import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
-import TokenPage from "./pages/TokenPage";
+import TokenPage from "./pages/TokenPage"; // 👈 Yeh pehle se sahi bani hui hai!
 import Trending from "./pages/Trending";
 import NewPairs from "./pages/NewPairs";
 import Watchlist from "./pages/Watchlist";
@@ -16,7 +16,7 @@ import Gainers from "./pages/Gainers";
 import Losers from "./pages/Losers";
 import MultiCharts from "./pages/MultiCharts";
 import Search from "./pages/Search";
-import TokenDetails from "./pages/TokenDetails";
+// ❌ YAHAN JO import TokenDetails waali line thi use HATA DO!
 
 export default function App() {
   return (
@@ -24,7 +24,7 @@ export default function App() {
       {/* ✅ Main Routes */}
       <Route path="/" element={<Home />} />
       <Route path="/token/:pairAddress" element={<TokenPage />} />
-      <Route path="/token/:address" element={<TokenDetails />} />
+      {/* ❌ YAHAN JO <Route path="/token/:address" element={<TokenDetails />} /> tha use bhi HATA DO! */}
       
       {/* ✅ Sidebar Navigation Routes */}
       <Route path="/trending" element={<Trending />} />

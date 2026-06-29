@@ -1,16 +1,24 @@
 // src/utils/currency.js
+const defaultRates = {
+  USD: 1, EUR: 0.93, GBP: 0.79, INR: 83.5,
+  JPY: 157.5, AUD: 1.51, CAD: 1.37, CHF: 0.91,
+  CNY: 7.27, KRW: 1380,
+};
+
+// ✅ Store latest rates
+let currentRates = { ...defaultRates };
+
+export const setCurrencyRates = (rates) => {
+  currentRates = { ...defaultRates, ...rates };
+};
+
 export const getCurrency = () => {
   return localStorage.getItem('preferredCurrency') || 'USD';
 };
 
 export const getCurrencyRate = () => {
-  const rates = {
-    USD: 1, EUR: 0.93, GBP: 0.79, INR: 83.5,
-    JPY: 157.5, AUD: 1.51, CAD: 1.37, CHF: 0.91,
-    CNY: 7.27, KRW: 1380,
-  };
   const currency = getCurrency();
-  return rates[currency] || 1;
+  return currentRates[currency] || defaultRates[currency] || 1;
 };
 
 export const getCurrencySymbol = () => {
@@ -23,7 +31,7 @@ export const getCurrencySymbol = () => {
   return symbols[currency] || '$';
 };
 
-export const formatCurrency = (value) => {
+export const formatPrice = (value) => {
   if (!value || value === 0) return 'N/A';
   const rate = getCurrencyRate();
   const symbol = getCurrencySymbol();

@@ -1,10 +1,11 @@
 // src/pages/Charts.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparklines, SparklinesLine, SparklinesReferenceLine } from 'react-sparklines';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import CandleChart from '../components/CandleChart';
+import { generateCandleData } from '../utils/mockChartData';
 import { fetchTokens } from '../services/api';
 
 const Charts = () => {
@@ -14,6 +15,7 @@ const Charts = () => {
   const [tokens, setTokens] = useState([]);
   const [selectedToken, setSelectedToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [timeframe, setTimeframe] = useState('1D');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,17 +44,13 @@ const Charts = () => {
     document.documentElement.classList.toggle('light');
   };
 
-  // Generate mock sparkline data (will be replaced with real historical data)
-  const generateSparklineData = (basePrice = 100) => {
-    const data = [];
-    let current = basePrice;
-    for (let i = 0; i < 30; i++) {
-      const change = (Math.random() - 0.5) * 0.04;
-      current = current * (1 + change);
-      data.push(current);
-    }
-    return data;
-  };
+  // Generate candle data for selected token
+  const candleData = selectedToken 
+    ? generateCandleData(selectedToken.price || 100, 100)
+    : [];
+
+  // Timeframe options
+  const timeframes = ['1D', '1W', '1M', '3M', '1Y'];
 
   return (
     <div className="min-h-screen bg-[#0b0e14] text-white flex">
@@ -67,12 +65,12 @@ const Charts = () => {
           setIsSidebarOpen={setIsSidebarOpen}
         />
         <div className="flex-1 p-4">
-          <h1 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-            📊 Charts
-          </h1>
-          
-          {/* Token Selector */}
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="flex flex-wrap items-center justify-between mb-4">
+            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+              📊 Charts
+            </h1>
+            
+            {/* Token Selector */}
             <select
               className="bg-[#1e232e] border border-gray-700 rounded-lg px-4 py-2 outline-none focus:border-green-500 text-white"
               onChange={(e) => {
@@ -89,81 +87,98 @@ const Charts = () => {
             </select>
           </div>
 
-          {/* Chart Area */}
-          {selectedToken ? (
-            <div className="bg-[#131722] border border-gray-800 rounded-xl p-6">
-              <div className="flex items-center justify-between mb-4">
+          {/* Token Info Bar */}
+          {selectedToken && (
+            <div className="bg-[#131722] border border-gray-800 rounded-xl p-4 mb-4">
+              <div className="flex flex-wrap items-center justify-between">
                 <div>
                   <h2 className="text-xl font-bold text-white">
                     {selectedToken.symbol} / USD
                   </h2>
                   <p className="text-gray-400 text-sm">{selectedToken.name}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-white">
-                    ${selectedToken.price?.toFixed(4) || 'N/A'}
-                  </p>
-                  <p className={`text-sm ${selectedToken.change_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {selectedToken.change_24h >= 0 ? '+' : ''}{selectedToken.change_24h?.toFixed(2)}%
-                  </p>
+                <div className="flex items-center gap-6">
+                  <div>
+                    <p className="text-gray-400 text-xs">Price</p>
+                    <p className="text-2xl font-bold text-white">
+                      ${selectedToken.price?.toFixed(4) || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-xs">24h Change</p>
+                    <p className={`text-lg font-bold ${
+                      selectedToken.change_24h >= 0 ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      {selectedToken.change_24h >= 0 ? '+' : ''}{selectedToken.change_24h?.toFixed(2)}%
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-xs">Volume</p>
+                    <p className="text-lg font-bold text-white">
+                      ${(selectedToken.volume_24h || 0).toLocaleString()}
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              {/* ✅ SPARKLINE CHART - REAL TIME */}
-              <div className="h-48 bg-[#1e232e] rounded-lg p-4 flex items-center justify-center">
-                <div className="w-full h-full">
-                  <Sparklines
-                    data={generateSparklineData(selectedToken.price || 100)}
-                    width={800}
-                    height={160}
-                    margin={5}
-                  >
-                    <SparklinesLine
-                      color={selectedToken.change_24h >= 0 ? '#22c55e' : '#ef4444'}
-                      style={{ strokeWidth: 2, fill: 'none' }}
-                    />
-                    <SparklinesReferenceLine type="mean" />
-                  </Sparklines>
-                </div>
-              </div>
-
-              {/* Timeframe selector */}
+              {/* Timeframe Selector */}
               <div className="flex gap-2 mt-4">
-                {['1H', '6H', '24H', '7D', '30D'].map((tf) => (
+                {timeframes.map((tf) => (
                   <button
                     key={tf}
-                    className="px-3 py-1 text-xs rounded-lg bg-[#1e232e] hover:bg-[#2a2f3a] text-gray-400 hover:text-white transition"
+                    onClick={() => setTimeframe(tf)}
+                    className={`px-3 py-1 rounded-lg text-xs font-medium transition ${
+                      timeframe === tf
+                        ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                        : 'bg-[#1e232e] text-gray-400 hover:text-white hover:bg-[#2a2f3a]'
+                    }`}
                   >
                     {tf}
                   </button>
                 ))}
               </div>
+            </div>
+          )}
 
-              {/* Stats Grid */}
+          {/* Candle Chart */}
+          {selectedToken ? (
+            <div className="bg-[#131722] border border-gray-800 rounded-xl p-4">
+              <CandleChart 
+                data={candleData} 
+                height={450}
+              />
+              
+              {/* Stats below chart */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                 <div className="bg-[#1e232e] p-3 rounded-lg">
-                  <p className="text-gray-400 text-xs">Price</p>
-                  <p className="text-white font-bold">${selectedToken.price?.toFixed(4) || 'N/A'}</p>
-                </div>
-                <div className="bg-[#1e232e] p-3 rounded-lg">
-                  <p className="text-gray-400 text-xs">24h Change</p>
-                  <p className={`font-bold ${selectedToken.change_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {selectedToken.change_24h >= 0 ? '+' : ''}{selectedToken.change_24h?.toFixed(2)}%
+                  <p className="text-gray-400 text-xs">Open</p>
+                  <p className="text-white font-bold">
+                    ${candleData[candleData.length - 1]?.open?.toFixed(4) || 'N/A'}
                   </p>
                 </div>
                 <div className="bg-[#1e232e] p-3 rounded-lg">
-                  <p className="text-gray-400 text-xs">Volume</p>
-                  <p className="text-white font-bold">${(selectedToken.volume_24h || 0).toLocaleString()}</p>
+                  <p className="text-gray-400 text-xs">High</p>
+                  <p className="text-white font-bold">
+                    ${candleData.reduce((max, d) => d.high > max ? d.high : max, 0)?.toFixed(4) || 'N/A'}
+                  </p>
                 </div>
                 <div className="bg-[#1e232e] p-3 rounded-lg">
-                  <p className="text-gray-400 text-xs">Liquidity</p>
-                  <p className="text-white font-bold">${(selectedToken.liquidity || 0).toLocaleString()}</p>
+                  <p className="text-gray-400 text-xs">Low</p>
+                  <p className="text-white font-bold">
+                    ${candleData.reduce((min, d) => d.low < min ? d.low : min, Infinity)?.toFixed(4) || 'N/A'}
+                  </p>
+                </div>
+                <div className="bg-[#1e232e] p-3 rounded-lg">
+                  <p className="text-gray-400 text-xs">Close</p>
+                  <p className="text-white font-bold">
+                    ${candleData[candleData.length - 1]?.close?.toFixed(4) || 'N/A'}
+                  </p>
                 </div>
               </div>
             </div>
           ) : (
             <div className="bg-[#131722] border border-gray-800 rounded-xl p-8 text-center">
-              <p className="text-gray-400">No tokens found</p>
+              <p className="text-gray-400">Select a token to view chart</p>
             </div>
           )}
         </div>

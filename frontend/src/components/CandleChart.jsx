@@ -1,5 +1,6 @@
 // src/components/CandleChart.jsx
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from "react";
+import { createChart } from "lightweight-charts";
 
 const CandleChart = ({ data, height = 400 }) => {
   const chartContainerRef = useRef(null);
@@ -35,26 +36,6 @@ const CandleChart = ({ data, height = 400 }) => {
             setIsLoaded(true);
           }
           return;
-        }
-
-        // ✅ Dynamic import with try-catch
-        let createChart;
-        try {
-          const module = await import('lightweight-charts');
-          createChart = module.createChart;
-        } catch (importError) {
-          console.error('❌ Failed to import lightweight-charts:', importError);
-          // ✅ Fallback: Try with require
-          try {
-            const module = require('lightweight-charts');
-            createChart = module.createChart || module.default?.createChart;
-          } catch (requireError) {
-            throw new Error('Failed to load lightweight-charts library');
-          }
-        }
-
-        if (!createChart) {
-          throw new Error('createChart not found in lightweight-charts');
         }
 
         // ✅ Clear previous chart

@@ -7,14 +7,6 @@ const CandleChart = ({ data, height = 400 }) => {
   const chartRef = useRef(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState(null);
-  const [containerReady, setContainerReady] = useState(false);
-
-  // ✅ Check container ready
-  useEffect(() => {
-    if (chartContainerRef.current) {
-      setContainerReady(true);
-    }
-  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -23,9 +15,8 @@ const CandleChart = ({ data, height = 400 }) => {
 
     const loadChart = async () => {
       try {
-        // ✅ Check if container is ready
-        if (!containerReady || !chartContainerRef.current) {
-          console.log('⏳ Container not ready yet');
+        // ✅ Problem 2: Direct ref check (No containerReady required)
+        if (!chartContainerRef.current) {
           return;
         }
 
@@ -38,7 +29,7 @@ const CandleChart = ({ data, height = 400 }) => {
           return;
         }
 
-        // ✅ Clear previous chart
+        // ✅ Clear previous chart instance safely
         if (chartRef.current) {
           chartRef.current.remove();
           chartRef.current = null;
@@ -106,7 +97,7 @@ const CandleChart = ({ data, height = 400 }) => {
 
         window.addEventListener('resize', handleResize);
 
-        // ✅ Cleanup function
+        // ✅ Cleanup function inside loadChart
         return () => {
           window.removeEventListener('resize', handleResize);
           if (chartRef.current) {
@@ -124,7 +115,7 @@ const CandleChart = ({ data, height = 400 }) => {
       }
     };
 
-    // ✅ Small delay to ensure DOM is ready
+    // ✅ Small delay to ensure DOM layout is completely painted
     const timer = setTimeout(() => {
       loadChart();
     }, 100);
@@ -137,24 +128,9 @@ const CandleChart = ({ data, height = 400 }) => {
         chartRef.current = null;
       }
     };
-  }, [data, height, containerReady]);
+  }, [data, height]); // ✅ Problem 3: Clean Dependency Array
 
-  // ✅ Loading state
-  if (!isLoaded) {
-    return (
-      <div
-        className="w-full rounded-lg overflow-hidden bg-[#131722] border border-gray-800 flex items-center justify-center"
-        style={{ height: height }}
-      >
-        <div className="text-gray-400 text-sm flex flex-col items-center gap-2">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-green-500 border-t-transparent"></div>
-          <span>Loading chart...</span>
-        </div>
-      </div>
-    );
-  }
-
-  // ✅ Error state
+  // ✅ Error state (renders inside bounds)
   if (error) {
     return (
       <div
@@ -183,13 +159,25 @@ const CandleChart = ({ data, height = 400 }) => {
     );
   }
 
-  // ✅ Chart container
+  // ✅ Fix Sabse Bada Bug: DOM Container remains present instantly!
   return (
     <div
-      ref={chartContainerRef}
-      className="w-full rounded-lg overflow-hidden bg-[#131722] border border-gray-800"
-      style={{ height: height, minHeight: height }}
-    />
+      className="relative w-full rounded-lg overflow-hidden bg-[#131722] border border-gray-800"
+      style={{ height }}
+    >
+      {!isLoaded && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#131722] z-10 gap-2">
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-green-500 border-t-transparent"></div>
+          <div className="text-gray-400 text-sm">Loading chart...</div>
+        </div>
+      )}
+
+      <div
+        ref={chartContainerRef}
+        className="w-full h-full"
+        style={{ minHeight: height }}
+      />
+    </div>
   );
 };
 

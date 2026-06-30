@@ -8,13 +8,13 @@ const getCurrency = () => {
 };
 
 const getCurrencyRate = () => {
-  const rates = {
-    USD: 1, EUR: 0.93, GBP: 0.79, INR: 83.5,
-    JPY: 157.5, AUD: 1.51, CAD: 1.37, CHF: 0.91,
-    CNY: 7.27, KRW: 1380,
-  };
   const currency = getCurrency();
-  return rates[currency] || 1;
+  const fixedRates = {
+    USD: 1, EUR: 0.93, GBP: 0.79, INR: 95.50,
+    JPY: 157.5, AUD: 1.51, CAD: 1.37,
+    CHF: 0.91, CNY: 7.27, KRW: 1380,
+  };
+  return fixedRates[currency] || 1;
 };
 
 const getCurrencySymbol = () => {
@@ -96,7 +96,6 @@ const TokenLogo = ({ logo, symbol }) => {
 const TokenTable = ({ tokens, onSelect, watchlist, toggleWatchlist }) => {
   const [currency, setCurrency] = useState(getCurrency());
 
-  // ✅ Listen for currency changes
   useEffect(() => {
     const handleCurrencyChange = () => {
       setCurrency(getCurrency());
@@ -140,12 +139,16 @@ const TokenTable = ({ tokens, onSelect, watchlist, toggleWatchlist }) => {
         </thead>
         <tbody>
           {tokens.map((token, index) => {
-            const tokenIdentifier = token.token_address || token.pair_address || `token-${index}`;
-            const isWatchlisted = watchlist?.includes(tokenIdentifier) || false;
+            // ✅ Unique key: use index as fallback if pair_address is duplicate
+            const uniqueKey = token.pair_address 
+              ? `${token.pair_address}-${index}`
+              : `token-${index}`;
+            const isWatchlisted = watchlist?.includes(uniqueKey) || false;
 
             return (
               <tr
-                key={tokenIdentifier}
+                // ✅ FINAL FIX: Use index as part of key
+                key={`row-${index}`}
                 className="border-b border-gray-800 hover:bg-[#1e232e] cursor-pointer transition group"
                 onClick={() => {
                   if (onSelect) {
@@ -164,7 +167,7 @@ const TokenTable = ({ tokens, onSelect, watchlist, toggleWatchlist }) => {
                   onClick={(e) => {
                     e.stopPropagation();
                     if (toggleWatchlist) {
-                      toggleWatchlist(tokenIdentifier);
+                      toggleWatchlist(uniqueKey);
                     }
                   }}
                 >
@@ -196,7 +199,7 @@ const TokenTable = ({ tokens, onSelect, watchlist, toggleWatchlist }) => {
                   </div>
                 </td>
 
-                {/* ✅ Price with Currency */}
+                {/* Price with Currency */}
                 <td className="py-3 px-2 text-right font-mono text-white">
                   {formatPrice(token.price)}
                 </td>
@@ -210,22 +213,22 @@ const TokenTable = ({ tokens, onSelect, watchlist, toggleWatchlist }) => {
                     : 'N/A'}
                 </td>
 
-                {/* ✅ Volume with Currency */}
+                {/* Volume with Currency */}
                 <td className="py-3 px-2 text-right text-gray-300">
                   {formatCurrency(token.volume_24h || token.volume)}
                 </td>
 
-                {/* ✅ Liquidity with Currency */}
+                {/* Liquidity with Currency */}
                 <td className="py-3 px-2 text-right text-gray-300">
                   {formatCurrency(token.liquidity)}
                 </td>
 
-                {/* ✅ FDV with Currency */}
+                {/* FDV with Currency */}
                 <td className="py-3 px-2 text-right text-gray-300">
                   {formatCurrency(token.fdv)}
                 </td>
 
-                {/* ✅ Market Cap with Currency */}
+                {/* Market Cap with Currency */}
                 <td className="py-3 px-2 text-right text-gray-300">
                   {formatCurrency(token.market_cap)}
                 </td>

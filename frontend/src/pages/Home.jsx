@@ -7,9 +7,9 @@ import StatsBar from '../components/StatsBar';
 import TrendingBar from '../components/TrendingBar';
 import TopCards from '../components/TopCards';
 import TokenTable from '../components/TokenTable';
-import WhaleActivity from '../components/WhaleActivity';
 import Footer from '../components/Footer';
 import { useTokens } from '../hooks/useTokens';
+import RightSidebar from '../components/RightSidebar'; // ✅ IMPORT ADD KARO
 
 const Home = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -84,7 +84,6 @@ const Home = () => {
                 <TokenTable
                   tokens={tokens}
                   onSelect={(token) => {
-                    // ✅ Correct navigation with pair_address
                     const address = token.pair_address || token.token_address || token.pairAddress;
                     if (address) {
                       navigate(`/token/${address}`);
@@ -117,10 +116,9 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Right Sidebar Widgets */}
+            {/* ✅ Right Sidebar - All Widgets! */}
             <div className="w-full lg:w-72 xl:w-80 flex-shrink-0 space-y-4">
-              <WhaleActivity />
-              {/* Additional widgets can go here */}
+              <RightSidebar watchlist={watchlist} tokens={tokens} />
             </div>
           </div>
         </div>

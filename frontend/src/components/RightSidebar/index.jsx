@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import WhaleActivity from "../WhaleActivity";
@@ -8,11 +8,11 @@ import TokenSignals from "./TokenSignals";
 import MarketHeatmap from "./MarketHeatmap";
 import SubscriptionCard from "./SubscriptionCard";
 import TransactionFee from "./TransactionFee";
+import AdBanner from "../AdBanner"; // ✅ AdBanner Imported
 
 // ====================================
-// 📢 Sponsored Banner
+// 📢 Sponsored Banner (Default Box)
 // ====================================
-
 const SponsoredBanner = () => {
   const navigate = useNavigate();
 
@@ -31,10 +31,7 @@ const SponsoredBanner = () => {
 
       {/* Banner */}
       <div className="rounded-xl border border-purple-500/20 bg-gradient-to-br from-purple-600/20 to-blue-600/20 p-5 text-center">
-
-        <div className="text-4xl mb-3">
-          🚀
-        </div>
+        <div className="text-4xl mb-3">🚀</div>
 
         <h2 className="text-white font-bold text-lg">
           Advertise Your Project
@@ -70,7 +67,6 @@ const SponsoredBanner = () => {
 // ====================================
 // ➕ Add Token Box
 // ====================================
-
 const AddTokenBox = ({ onTokenAdd }) => {
   const [tokenAddress, setTokenAddress] = useState("");
   const [isAdding, setIsAdding] = useState(false);
@@ -144,16 +140,55 @@ const AddTokenBox = ({ onTokenAdd }) => {
 };
 
 // ====================================
-// RIGHT SIDEBAR
+// RIGHT SIDEBAR (Main Component)
 // ====================================
-
 const RightSidebar = ({ watchlist, tokens, onTokenAdd }) => {
+  const [activeAd, setActiveAd] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // 🔄 Fetch Approved Ads from Backend
+  useEffect(() => {
+    const fetchActiveAd = async () => {
+      try {
+        const response = await fetch("https://ecobackend-two.vercel.app/api/ads/active");
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Check: Agar backend se direct array aa raha hai list ki tarah
+          if (Array.isArray(data) && data.length > 0) {
+            const approvedAd = data.find(item => item.status === "approved");
+            if (approvedAd) setActiveAd(approvedAd);
+          } 
+          // Check: Agar direct ek hi object aa raha hai
+          else if (data && data.status === "approved") {
+            setActiveAd(data);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching active ad:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchActiveAd();
+  }, []);
 
   return (
     <div className="w-full lg:w-72 xl:w-80 flex-shrink-0 space-y-4">
 
-      {/* 📢 Advertise */}
-      <SponsoredBanner />
+      {/* 📢 Dynamic Ad Spot */}
+      {loading ? (
+        <div className="bg-[#131722] h-40 border border-gray-800 rounded-xl flex items-center justify-center text-xs text-gray-500">
+          ⏳ Loading Sponsored Section...
+        </div>
+      ) : activeAd ? (
+        // ✅ Prop ko 'ad' pass kiya taaki AdBanner.jsx use extract kar sake
+        <AdBanner ad={activeAd} />
+      ) : (
+        // ❌ No approved ad -> Render default card
+        <SponsoredBanner />
+      )}
 
       {/* ➕ Add Token */}
       <AddTokenBox onTokenAdd={onTokenAdd} />
@@ -165,23 +200,16 @@ const RightSidebar = ({ watchlist, tokens, onTokenAdd }) => {
       <PortfolioSnapshot />
 
       {/* ⭐ Watchlist */}
-      <YourWatchlist
-        watchlist={watchlist}
-        tokens={tokens}
-      />
+      <YourWatchlist watchlist={watchlist} tokens={tokens} />
 
       {/* 💳 Transaction Fee */}
       <TransactionFee />
 
       {/* 🎯 Token Signals */}
-      <TokenSignals
-        tokens={tokens}
-      />
+      <TokenSignals tokens={tokens} />
 
       {/* 🌡️ Market Heatmap */}
-      <MarketHeatmap
-        tokens={tokens}
-      />
+      <MarketHeatmap tokens={tokens} />
 
       {/* 🐋 Whale Activity */}
       <WhaleActivity />

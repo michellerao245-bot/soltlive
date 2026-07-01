@@ -17,6 +17,7 @@ import Gainers from "./pages/Gainers";
 import Losers from "./pages/Losers";
 import MultiCharts from "./pages/MultiCharts";
 import Advertise from "./pages/Advertise";
+import Advertisements from "./pages/Admin/Advertisements"; // ✅ Admin Panel
 
 export default function App() {
   return (
@@ -45,6 +46,9 @@ export default function App() {
 
         {/* ✅ Advertise */}
         <Route path="/advertise" element={<Advertise />} />
+
+        {/* ✅ Admin Panel - Only accessible by owner wallet */}
+        <Route path="/admin/advertisements" element={<Advertisements />} />
       </Routes>
     </WalletProvider>
   );

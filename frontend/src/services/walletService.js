@@ -33,7 +33,7 @@ class WalletService {
 
       this.address = accounts[0];
       
-      // Setup provider and signer
+      // ✅ For ethers v5
       this.provider = new ethers.providers.Web3Provider(window.ethereum);
       this.signer = this.provider.getSigner();
       this.isConnected = true;
@@ -71,13 +71,11 @@ class WalletService {
       const chainIdHex = `0x${targetChainId.toString(16)}`;
       
       try {
-        // Try to switch to the network
         await window.ethereum.request({
           method: 'wallet_switchEthereumChain',
           params: [{ chainId: chainIdHex }],
         });
       } catch (switchError) {
-        // If network is not added, add it
         if (switchError.code === 4902) {
           await this.addNetwork(targetChainId);
         } else {
@@ -121,7 +119,6 @@ class WalletService {
   // Disconnect wallet
   async disconnectWallet() {
     try {
-      // Remove event listeners
       if (window.ethereum) {
         window.ethereum.removeListener('accountsChanged', this.handleAccountsChanged);
         window.ethereum.removeListener('chainChanged', this.handleChainChanged);
@@ -143,12 +140,9 @@ class WalletService {
   // Handle account changes
   handleAccountsChanged(accounts) {
     if (accounts.length === 0) {
-      // User disconnected from MetaMask
       this.disconnectWallet();
     } else {
-      // Account changed
       this.address = accounts[0];
-      // Update UI or trigger re-render
       window.dispatchEvent(new Event('walletAccountChanged'));
     }
   }

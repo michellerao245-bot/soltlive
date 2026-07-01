@@ -1,3 +1,6 @@
-export default function useWallet() {
-  return {};
-}
+// src/hooks/useWallet.js
+import { useWalletContext } from '../context/WalletContext';
+
+export const useWallet = () => {
+  return useWalletContext();
+};

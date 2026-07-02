@@ -150,17 +150,18 @@ const RightSidebar = ({ watchlist, tokens, onTokenAdd }) => {
   useEffect(() => {
     const fetchActiveAd = async () => {
       try {
-        const response = await fetch("https://ecobackend-two.vercel.app/api/ads/active");
+        // 🌟 URL badal kar naya simple backend path laga diya hai
+        const response = await fetch("https://ecobackend-two.vercel.app/api/activeAd");
         if (response.ok) {
           const data = await response.json();
           
           // Check: Agar backend se direct array aa raha hai list ki tarah
           if (Array.isArray(data) && data.length > 0) {
-            const approvedAd = data.find(item => item.status === "approved");
+            const approvedAd = data.find(item => item.status === "approved" || item.status === "Approved");
             if (approvedAd) setActiveAd(approvedAd);
           } 
-          // Check: Agar direct ek hi object aa raha hai
-          else if (data && data.status === "approved") {
+          // Check: Agar direct ek hi object aa raha hai (Jo hamara naya backend bhej raha hai)
+          else if (data && (data.status === "approved" || data.status === "Approved" || data.projectName)) {
             setActiveAd(data);
           }
         }

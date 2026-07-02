@@ -151,7 +151,7 @@ const RightSidebar = ({ watchlist, tokens, onTokenAdd }) => {
     const fetchActiveAd = async () => {
       try {
         // 🌟 URL badal kar naya simple backend path laga diya hai
-        const response = await fetch("https://ecobackend-two.vercel.app/api/activead");
+        const response = await fetch("https://ecobackend-two.vercel.app/api/actived");
         if (response.ok) {
           const data = await response.json();
           
